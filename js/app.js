@@ -4,9 +4,16 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize Modules
+  let introLab = null;
   let planeLab = null;
   let solidLab = null;
   let missionsLab = null;
+
+  try {
+    introLab = new window.IntroLab();
+  } catch (e) {
+    console.error('IntroLab init error:', e);
+  }
 
   try {
     planeLab = new window.PlaneLab('planeCanvas');

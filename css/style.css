@@ -643,3 +643,172 @@ input[type="range"] {
   cursor: pointer;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   Smartphone Photo Lab & Face Selection Styles (v2.1)
+   ========================================================================== */
+
+/* Face Select Chips in 3D Solid Lab */
+.face-select-chip {
+  padding: 0.35rem 0.65rem;
+  background: white;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.face-select-chip:hover {
+  background: var(--bg-subtle);
+  border-color: #f59e0b;
+}
+
+.face-select-chip.active {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
+  box-shadow: 0 0 0 1px #f59e0b;
+}
+
+/* Smartphone Mockup Frame */
+.smartphone-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  background: #f1f5f9;
+  border-radius: var(--radius-lg);
+  min-height: 480px;
+}
+
+.phone-mockup-frame {
+  width: 300px;
+  height: 520px;
+  background: #0f172a;
+  border-radius: 40px;
+  padding: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1), inset 0 0 0 2px #334155;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.phone-dynamic-island {
+  width: 90px;
+  height: 22px;
+  background: #000000;
+  border-radius: 20px;
+  margin: 4px auto 8px auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  z-index: 20;
+}
+
+.phone-camera-lens {
+  width: 10px;
+  height: 10px;
+  background: #1e293b;
+  border-radius: 50%;
+  border: 1px solid #334155;
+}
+
+.phone-screen {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-top-bar {
+  padding: 0.6rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.phone-photo-canvas-area {
+  flex: 1;
+  background: linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.interactive-avatar-box {
+  width: 130px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  transition: transform 0.1s ease-out;
+}
+
+.phone-bottom-home-bar {
+  width: 100px;
+  height: 4px;
+  background: #94a3b8;
+  border-radius: 2px;
+  margin: 8px auto;
+}
+
+/* Photo Quiz Polaroid Cards */
+.photo-quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.polaroid-card {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.polaroid-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.polaroid-card.correct {
+  border-color: var(--success);
+  background: #f0fdf4;
+}
+
+.polaroid-card.wrong {
+  border-color: var(--danger);
+  background: #fef2f2;
+}
+
+.polaroid-img-box {
+  height: 130px;
+  background: #e2e8f0;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}

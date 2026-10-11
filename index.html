@@ -26,24 +26,173 @@
     </div>
   </header>
 
-  <!-- Tab Navigation (1차시 3단계 수업 흐름) -->
+  <!-- Tab Navigation (1차시 4단계 흐름: 도입 -> 평면 -> 입체 -> 미션) -->
   <nav class="tab-navigation">
-    <button class="tab-btn active" data-tab="tab-plane">
-      <span>📐</span> 1. 평면도형 닮음 랩 (작도 & 왜곡)
+    <button class="tab-btn active" data-tab="tab-intro">
+      <span>📱</span> 0. 도입: 스마트폰 사진 실험
+    </button>
+    <button class="tab-btn" data-tab="tab-plane">
+      <span>📐</span> 1. 평면도형 탐구 랩
     </button>
     <button class="tab-btn" data-tab="tab-solid">
-      <span>🧊</span> 2. 3D 입체도형 닮음 랩 (축 분리)
+      <span>🧊</span> 2. 3D 입체도형 탐구 랩
     </button>
     <button class="tab-btn" data-tab="tab-missions">
-      <span>🎯</span> 3. 도전 미션 & 형성평가
+      <span>🎯</span> 3. 도전 미션 & 퀴즈
     </button>
   </nav>
 
   <!-- Main Content Body -->
   <main class="main-content">
 
+    <!-- TAB 0: Smartphone Photo Introductory Lab (NEW) -->
+    <section id="tab-intro" class="tab-panel active">
+      <div class="workspace-layout">
+        
+        <!-- Left: Smartphone Mockup Viewport -->
+        <div class="viewport-card" style="background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+          <div class="phone-mockup-frame">
+            <div class="phone-dynamic-island">
+              <div class="phone-camera-lens"></div>
+            </div>
+            
+            <div class="phone-screen">
+              <div class="phone-top-bar">
+                <span>📷 사진 편집기</span>
+                <span>비율 조절 중</span>
+              </div>
+              
+              <div class="phone-photo-canvas-area">
+                <!-- Fun Animated Friendly Student Avatar SVG -->
+                <div id="interactiveAvatar" class="interactive-avatar-box">
+                  <svg width="120" height="140" viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Neck -->
+                    <rect x="50" y="85" width="20" height="20" rx="4" fill="#fed7aa"/>
+                    <!-- Shoulders & Shirt -->
+                    <path d="M20 125 C20 100, 100 100, 100 125 L105 140 L15 140 Z" fill="#4f46e5"/>
+                    <path d="M50 105 L60 120 L70 105 Z" fill="#ffffff"/>
+                    <!-- Head / Face -->
+                    <ellipse cx="60" cy="55" rx="36" ry="42" fill="#ffedd5"/>
+                    <!-- Hair -->
+                    <path d="M24 50 C24 20, 96 20, 96 50 C96 30, 80 15, 60 15 C40 15, 24 30, 24 50 Z" fill="#1e293b"/>
+                    <path d="M24 50 C32 40, 50 45, 60 38 C70 45, 88 40, 96 50 C92 35, 78 32, 60 32 C42 32, 28 35, 24 50 Z" fill="#334155"/>
+                    <!-- Eyebrows -->
+                    <path d="M38 42 Q46 38 52 42" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M68 42 Q74 38 82 42" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Eyes -->
+                    <circle cx="45" cy="52" r="5" fill="#1e293b"/>
+                    <circle cx="47" cy="50" r="1.8" fill="#ffffff"/>
+                    <circle cx="75" cy="52" r="5" fill="#1e293b"/>
+                    <circle cx="77" cy="50" r="1.8" fill="#ffffff"/>
+                    <!-- Glasses -->
+                    <circle cx="45" cy="52" r="12" stroke="#dc2626" stroke-width="2.5" fill="none"/>
+                    <circle cx="75" cy="52" r="12" stroke="#dc2626" stroke-width="2.5" fill="none"/>
+                    <line x1="57" y1="52" x2="63" y2="52" stroke="#dc2626" stroke-width="2.5"/>
+                    <!-- Cute Blush -->
+                    <ellipse cx="36" cy="62" rx="6" ry="3" fill="#fca5a5" opacity="0.6"/>
+                    <ellipse cx="84" cy="62" rx="6" ry="3" fill="#fca5a5" opacity="0.6"/>
+                    <!-- Smiling Mouth -->
+                    <path d="M48 68 Q60 80 72 68" stroke="#be123c" stroke-width="3" stroke-linecap="round" fill="none"/>
+                  </svg>
+                </div>
+              </div>
+              
+              <div class="phone-bottom-home-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Lesson Introduction & Photo Quiz -->
+        <aside class="control-sidebar">
+          
+          <!-- Experiment Controls -->
+          <div class="card">
+            <div class="card-title">
+              <span>스마트폰 사진 조작 실험</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">지도안 동기유발</span>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label">
+                <span>가로 늘이기 비율 (Width)</span>
+                <span id="photoScaleXVal" class="control-value">1.0배</span>
+              </div>
+              <input type="range" id="photoScaleX" min="0.5" max="2.5" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+              <div class="control-label">
+                <span>세로 늘이기 비율 (Height)</span>
+                <span id="photoScaleYVal" class="control-value">1.0배</span>
+              </div>
+              <input type="range" id="photoScaleY" min="0.5" max="2.5" step="0.1" value="1.0">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.75rem;">
+              <button id="btnPhotoWidthStretch" class="btn btn-secondary btn-sm btn-block">
+                ⚠ [사진 A 재현] 가로로만 2.2배 쭉 늘리기
+              </button>
+              <button id="btnPhotoUniformZoom" class="btn btn-primary btn-sm btn-block">
+                ✓ [사진 B 재현] 대각선으로 1.6배 균일 확대
+              </button>
+              <button id="btnResetPhoto" class="btn btn-secondary btn-sm btn-block">
+                ↺ 원본 사진으로 초기화 (1.0배)
+              </button>
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <div id="photoRatioStatus" class="badge-similarity yes">★ 원본 사진 (비율 1 : 1)</div>
+              <div id="photoStatusDesc" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.4;">
+                스마트폰 사진의 가로 또는 세로를 늘려보며 얼굴 모양이 어떻게 변하는지 확인해보세요!
+              </div>
+            </div>
+          </div>
+
+          <!-- Thought Experiment: Lesson Plan Question -->
+          <div class="card">
+            <div class="card-title">🤔 수업 발문: 어느 쪽이 진짜 '닮음'일까요?</div>
+            <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.5; margin-bottom: 0.75rem;">
+              <b>Q.</b> 스마트폰에서 인물 사진을 늘릴 때, <b>본래 얼굴 모양을 잃지 않고 그대로 확대한 사진</b>은 어느 것일까요?
+            </div>
+
+            <div class="photo-quiz-grid">
+              <!-- Option A -->
+              <div id="photoOptionA" class="polaroid-card">
+                <div class="polaroid-img-box">
+                  <div style="transform: scale(1.8, 0.9); transform-origin: center;">
+                    <span style="font-size: 2.2rem;">🧑</span>
+                  </div>
+                </div>
+                <b style="font-size: 0.85rem; color: var(--text-main);">사진 A</b>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">가로로만 쭉 늘림</div>
+              </div>
+
+              <!-- Option B -->
+              <div id="photoOptionB" class="polaroid-card">
+                <div class="polaroid-img-box">
+                  <div style="transform: scale(1.3, 1.3); transform-origin: center;">
+                    <span style="font-size: 2.2rem;">🧑</span>
+                  </div>
+                </div>
+                <b style="font-size: 0.85rem; color: var(--text-main);">사진 B</b>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">가로·세로 균일 확대</div>
+              </div>
+            </div>
+
+            <div id="photoQuizFeedback" class="feedback-alert" style="display: none; margin-top: 0.85rem;"></div>
+
+            <button id="btnGoToPlane" class="btn btn-primary btn-block" style="margin-top: 0.85rem; display: none;">
+              수학적 닮음 탐구하러 가기 (1단계 랩) ➡️
+            </button>
+          </div>
+
+        </aside>
+
+      </div>
+    </section>
+
     <!-- TAB 1: 2D Plane Geometry Lab -->
-    <section id="tab-plane" class="tab-panel active">
+    <section id="tab-plane" class="tab-panel">
       <div class="workspace-layout">
         <!-- Canvas Viewport Area -->
         <div class="viewport-card">
@@ -54,7 +203,7 @@
               <span>확대 도형: <b style="color: #4f46e5;">△DEF</b></span>
             </div>
 
-            <!-- 측정 도구 칩 (지도안 유의사항: 각도 측정기, 길이 눈금 활용 독려) -->
+            <!-- Measurement Tool Chips -->
             <div class="toolbar-group">
               <label class="tool-chip">
                 <input type="checkbox" id="toggleAngles" checked>
@@ -80,7 +229,7 @@
         <!-- Right Control Sidebar -->
         <aside class="control-sidebar">
 
-          <!-- Sub-mode Selector (Explore vs Draw) -->
+          <!-- Sub-mode Selector -->
           <div class="card">
             <div class="card-title">학습 모드 선택</div>
             <div class="submode-switch">
@@ -157,22 +306,30 @@
       </div>
     </section>
 
-    <!-- TAB 2: 3D Solid Geometry Lab -->
+    <!-- TAB 2: 3D Solid Geometry Lab (대응면 클릭 & 분석 기능 강화) -->
     <section id="tab-solid" class="tab-panel">
       <div class="workspace-layout">
         <!-- 3D Canvas Viewport Area -->
         <div class="viewport-card">
           <div class="viewport-toolbar">
             <div class="toolbar-group">
-              <span>🧊 3D 공간 뷰어 (기준 직육면체: <b>가로 2 × 세로 3 × 높이 4</b>)</span>
+              <span>🧊 기준 직육면체: <b>가로 2 × 세로 3 × 높이 4</b></span>
+              <span style="margin: 0 0.2rem; color: #cbd5e1;">|</span>
+              <span style="font-size: 0.8rem; color: var(--primary);">🖱️ 3D 면을 직접 클릭해보세요!</span>
             </div>
+
+            <!-- Face Selector Chips (Click in 3D or click Chip) -->
             <div class="toolbar-group">
-              <button id="btnResetSolidView" class="btn btn-secondary btn-sm">시점 초기화</button>
+              <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">대응면 선택:</span>
+              <button class="face-select-chip active" data-face="front">앞면 (2×4)</button>
+              <button class="face-select-chip" data-face="top">윗면 (2×3)</button>
+              <button class="face-select-chip" data-face="side">옆면 (3×4)</button>
+              <button id="btnResetSolidView" class="btn btn-secondary btn-sm" style="margin-left: 0.3rem;">시점 초기화</button>
             </div>
           </div>
 
           <div class="canvas-container">
-            <div class="canvas-hint">🖱️ 화면을 터치/드래그하여 360도로 회전하며 입체도형의 면과 모서리를 관찰하세요.</div>
+            <div class="canvas-hint">🖱️ 3D 입체도형의 면을 클릭하거나 회전시키며 대응면(주황색 하이라이트)의 모양 변화를 관찰하세요.</div>
             <canvas id="threeCanvas"></canvas>
           </div>
         </div>
@@ -215,19 +372,22 @@
             </div>
           </div>
 
-          <!-- Solid Similarity Analysis -->
+          <!-- Solid Similarity Analysis & Face Details -->
           <div class="card">
-            <div class="card-title">입체도형 닮음 판정 결과</div>
+            <div class="card-title">입체도형 닮음 및 대응면 판정</div>
             <div id="solidSimilarityBadge" class="badge-similarity yes">
               ✓ 입체도형 닮음 성립
             </div>
+            
             <div id="solidAnalysisDetail" class="data-box">
               <div class="data-row"><span>기준 규격:</span> <b>가로 2 × 세로 3 × 높이 4</b></div>
               <div class="data-row"><span>확대 규격:</span> <b>가로 3.0 × 세로 4.5 × 높이 6.0</b></div>
               <div class="data-row"><span>대응 모서리 비:</span> <b>1 : 1.5 (균일)</b></div>
-              <div class="data-row"><span>대응 면의 관계:</span> <b>모든 면이 닮은 평면도형</b></div>
               <div class="data-row"><span>입체 닮음비:</span> <b>1 : 1.5</b></div>
             </div>
+
+            <!-- Detailed Face Similarity Analysis (NEW) -->
+            <div id="solidFaceDetail"></div>
           </div>
         </aside>
       </div>
@@ -255,13 +415,16 @@
           <b>[지도교사]</b> 임종윤 선생님
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>1. 탐구 목표:</b> 한 도형을 일정한 비율로 확대하거나 축소했을 때 변하는 것과 변하지 않는 것을 스스로 찾아봅니다.
+          <b>0. 스마트폰 사진 실험(도입):</b> 사진을 한쪽으로만 늘릴 때의 우스꽝스러운 왜곡과 대각선 균일 확대의 차이를 비교하며 '닮음'의 직관적 필요성을 체감합니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>2. 평면 랩(1단계):</b> 가로만 늘렸을 때 각도가 어떻게 일그러지는지 확인하고, 정비율 확대 시 <code>포개어보기(Overlay)</code>와 <code>각도 측정기</code>를 통해 각도가 그대로 유지됨을 관찰하세요.
+          <b>1. 평면 랩(1단계):</b> 모눈 위에서 삼각형의 각도와 변을 직접 관찰하고, <code>각도 측정기</code>와 <code>포개어보기</code>로 각도의 불변성을 증명합니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>3. 입체 랩(2단계):</b> <code>[축 분리 모드]</code>를 통해 높이만 늘렸을 때 옆면 직사각형의 모양이 변하여 입체 닮음이 깨짐을 확인하세요.
+          <b>2. 입체 랩(2단계):</b> 3D 직육면체의 <b>면(앞면, 윗면, 옆면)을 직접 클릭</b>하여 대응면이 닮음이어야 전체 입체가 닮음이 됨을 스스로 발견합니다.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <b>3. 미션(3단계):</b> 모눈에서 결손된 꼭짓점을 찾아 클릭하고, 직사각형의 닮음비를 주관식으로 입력하여 실력을 점검합니다.
         </p>
         <div style="background: var(--bg-subtle); padding: 0.75rem; border-radius: var(--radius-md); margin-top: 1rem; color: var(--text-main);">
           <b>💡 닮음의 기호:</b> $\triangle ABC \sim \triangle DEF$ (대응하는 점의 순서를 꼭 맞춰 적어야 합니다!)
@@ -273,6 +436,7 @@
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="js/intro-lab.js"></script>
   <script src="js/plane-lab.js"></script>
   <script src="js/solid-lab.js"></script>
   <script src="js/missions.js"></script>
