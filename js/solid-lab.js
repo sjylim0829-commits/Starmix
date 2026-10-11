@@ -1,5 +1,6 @@
 /**
  * Starmix Similarity Lab - Solid Geometry Module (3D Three.js 뷰어)
+ * Standard Cuboid: Width 2, Depth 3, Height 4
  */
 
 class SolidLab {
@@ -17,12 +18,11 @@ class SolidLab {
     this.transMesh = null;
     this.gridHelper = null;
 
-    // Scale state
-    this.scaleX = 1.8;
-    this.scaleY = 1.8;
-    this.scaleZ = 1.8;
-    this.shapeType = 'box'; // 'box', 'prism', 'pyramid'
-    this.isUniform = true;
+    // Scale State
+    this.scaleX = 1.5; // Width (가로 2)
+    this.scaleZ = 1.5; // Depth (세로 3)
+    this.scaleY = 1.5; // Height (높이 4)
+    this.shapeType = 'box';
 
     this.init();
   }
@@ -39,7 +39,7 @@ class SolidLab {
   setupThree() {
     const parent = this.canvas.parentElement;
     const width = parent.clientWidth || 800;
-    const height = Math.max(480, parent.clientHeight || 520);
+    const height = Math.max(500, parent.clientHeight || 520);
 
     // Scene
     this.scene = new THREE.Scene();
@@ -47,7 +47,7 @@ class SolidLab {
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    this.camera.position.set(7, 6, 9);
+    this.camera.position.set(8, 7, 11);
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
@@ -56,41 +56,41 @@ class SolidLab {
     this.renderer.shadowMap.enabled = true;
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     this.scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(10, 15, 10);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    dirLight.position.set(10, 20, 10);
     dirLight.castShadow = true;
     this.scene.add(dirLight);
 
     // Ground Grid
-    this.gridHelper = new THREE.GridHelper(20, 20, 0x94a3b8, 0xe2e8f0);
+    this.gridHelper = new THREE.GridHelper(24, 24, 0x94a3b8, 0xe2e8f0);
     this.gridHelper.position.y = -0.01;
     this.scene.add(this.gridHelper);
 
-    // Controls (OrbitControls)
+    // Controls
     if (THREE.OrbitControls) {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.05;
-      this.controls.maxPolarAngle = Math.PI / 2 + 0.1; // Don't go below floor
+      this.controls.maxPolarAngle = Math.PI / 2 + 0.05;
     }
   }
 
   createGeometry() {
+    // Standard Cuboid: Width 2 (X), Height 4 (Y), Depth 3 (Z)
     if (this.shapeType === 'box') {
-      return new THREE.BoxGeometry(1.5, 2.0, 1.0);
+      return new THREE.BoxGeometry(2.0, 4.0, 3.0);
     } else if (this.shapeType === 'pyramid') {
-      return new THREE.ConeGeometry(1.4, 2.2, 4);
+      return new THREE.ConeGeometry(2.0, 4.0, 4);
     } else if (this.shapeType === 'prism') {
-      return new THREE.CylinderGeometry(1.2, 1.2, 2.0, 3);
+      return new THREE.CylinderGeometry(1.8, 1.8, 4.0, 3);
     }
-    return new THREE.BoxGeometry(1.5, 2.0, 1.0);
+    return new THREE.BoxGeometry(2.0, 4.0, 3.0);
   }
 
   createMeshes() {
-    // Clean old meshes
     if (this.baseMesh) this.scene.remove(this.baseMesh);
     if (this.transMesh) this.scene.remove(this.transMesh);
 
@@ -99,16 +99,15 @@ class SolidLab {
     // 1. Base Mesh (Original - Green)
     const baseMat = new THREE.MeshStandardMaterial({
       color: 0x10b981,
-      roughness: 0.3,
+      roughness: 0.25,
       metalness: 0.1,
       transparent: true,
       opacity: 0.85
     });
     this.baseMesh = new THREE.Mesh(geom, baseMat);
-    this.baseMesh.position.set(-2.5, 1.0, 0);
+    this.baseMesh.position.set(-3.5, 2.0, 0); // half height = 2.0
     this.baseMesh.castShadow = true;
 
-    // Edges for Base
     const baseEdges = new THREE.LineSegments(
       new THREE.EdgesGeometry(geom),
       new THREE.LineBasicMaterial({ color: 0x047857, linewidth: 2 })
@@ -116,7 +115,7 @@ class SolidLab {
     this.baseMesh.add(baseEdges);
     this.scene.add(this.baseMesh);
 
-    // 2. Transformed Mesh (Scale - Indigo / Red)
+    // 2. Transformed Mesh
     this.updateTransformedMesh();
   }
 
@@ -132,7 +131,7 @@ class SolidLab {
 
     const transMat = new THREE.MeshStandardMaterial({
       color: color,
-      roughness: 0.3,
+      roughness: 0.25,
       metalness: 0.1,
       transparent: true,
       opacity: 0.85
@@ -140,7 +139,9 @@ class SolidLab {
 
     this.transMesh = new THREE.Mesh(geom, transMat);
     this.transMesh.scale.set(this.scaleX, this.scaleY, this.scaleZ);
-    this.transMesh.position.set(2.5, (2.0 * this.scaleY) / 2, 0);
+
+    // Dynamic ground alignment: position Y = (4.0 * scaleY) / 2
+    this.transMesh.position.set(3.5, (4.0 * this.scaleY) / 2, 0);
     this.transMesh.castShadow = true;
 
     const edges = new THREE.LineSegments(
@@ -158,7 +159,9 @@ class SolidLab {
     const scaleAllVal = document.getElementById('solidScaleAllVal');
     const heightSlider = document.getElementById('solidHeightSlider');
     const heightVal = document.getElementById('solidHeightVal');
-    const shapeSelect = document.getElementById('solidShapeSelect');
+    const btnPreset15 = document.getElementById('btnPreset15');
+    const btnPreset20 = document.getElementById('btnPreset20');
+    const btnModeAxisSplit = document.getElementById('btnModeAxisSplit');
     const btnResetView = document.getElementById('btnResetSolidView');
 
     if (scaleAllSlider && scaleAllVal) {
@@ -183,24 +186,58 @@ class SolidLab {
       });
     }
 
-    if (shapeSelect) {
-      shapeSelect.addEventListener('change', (e) => {
-        this.shapeType = e.target.value;
-        this.createMeshes();
+    if (btnPreset15) {
+      btnPreset15.addEventListener('click', () => {
+        this.setScale(1.5, 1.5, 1.5);
+      });
+    }
+
+    if (btnPreset20) {
+      btnPreset20.addEventListener('click', () => {
+        this.setScale(2.0, 2.0, 2.0);
+      });
+    }
+
+    // [축 분리 모드] 지도안 내용: "높이만 3배로 늘려본 뒤 원래 모양과 비교"
+    if (btnModeAxisSplit) {
+      btnModeAxisSplit.addEventListener('click', () => {
+        this.setScale(1.0, 3.0, 1.0);
       });
     }
 
     if (btnResetView) {
       btnResetView.addEventListener('click', () => {
-        this.camera.position.set(7, 6, 9);
-        if (this.controls) this.controls.target.set(0, 1, 0);
+        this.camera.position.set(8, 7, 11);
+        if (this.controls) this.controls.target.set(0, 2, 0);
       });
     }
+  }
+
+  setScale(x, y, z) {
+    this.scaleX = x;
+    this.scaleY = y;
+    this.scaleZ = z;
+
+    const scaleAllSlider = document.getElementById('solidScaleAll');
+    const scaleAllVal = document.getElementById('solidScaleAllVal');
+    const heightSlider = document.getElementById('solidHeightSlider');
+    const heightVal = document.getElementById('solidHeightVal');
+
+    if (scaleAllSlider) scaleAllSlider.value = x;
+    if (scaleAllVal) scaleAllVal.textContent = `${x.toFixed(1)}배`;
+    if (heightSlider) heightSlider.value = y;
+    if (heightVal) heightVal.textContent = `${y.toFixed(1)}배`;
+
+    this.updateTransformedMesh();
   }
 
   updateStatus(isSimilar) {
     const badge = document.getElementById('solidSimilarityBadge');
     const detailBox = document.getElementById('solidAnalysisDetail');
+
+    const curW = (2.0 * this.scaleX).toFixed(1);
+    const curD = (3.0 * this.scaleZ).toFixed(1);
+    const curH = (4.0 * this.scaleY).toFixed(1);
 
     if (badge) {
       if (isSimilar) {
@@ -208,22 +245,25 @@ class SolidLab {
         badge.innerHTML = `✓ 입체도형 닮음 성립 (모든 모서리 ${this.scaleX.toFixed(1)}배)`;
       } else {
         badge.className = 'badge-similarity no';
-        badge.innerHTML = `✗ 닮음 아님 (특정 축만 늘어나 왜곡됨)`;
+        badge.innerHTML = `✗ 닮음 아님 (높이만 비대칭 확장되어 왜곡됨)`;
       }
     }
 
     if (detailBox) {
       if (isSimilar) {
         detailBox.innerHTML = `
-          <div class="data-row"><span>대응하는 모서리의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (균일)</b></div>
-          <div class="data-row"><span>대응하는 면의 닮음:</span> <b>모든 면이 서로 닮은 평면도형</b></div>
+          <div class="data-row"><span>기준 규격:</span> <b>가로 2 × 세로 3 × 높이 4</b></div>
+          <div class="data-row"><span>확대 규격:</span> <b>가로 ${curW} × 세로 ${curD} × 높이 ${curH}</b></div>
+          <div class="data-row"><span>대응 모서리 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (모든 모서리 일정)</b></div>
+          <div class="data-row"><span>대응면(직사각형):</span> <b>앞면·윗면·옆면 모두 닮은 평면도형</b></div>
           <div class="data-row"><span>입체 닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
         `;
       } else {
         detailBox.innerHTML = `
-          <div class="data-row"><span>가로/깊이 배율:</span> <b>${this.scaleX.toFixed(1)}배</b></div>
-          <div class="data-row"><span>높이 배율:</span> <b>${this.scaleY.toFixed(1)}배</b></div>
-          <div class="data-row" style="color: #dc2626;"><span>면의 형태:</span> <b>옆면 직사각형의 가로세로 비율 붕괴!</b></div>
+          <div class="data-row"><span>기준 규격:</span> <b>가로 2 × 세로 3 × 높이 4</b></div>
+          <div class="data-row"><span>확대 규격:</span> <b>가로 ${curW} × 세로 ${curD} × 높이 ${curH}</b></div>
+          <div class="data-row" style="color: #dc2626;"><span>대응면 변화:</span> <b>앞면(2×${curH})의 가로:세로 비가 깨짐!</b></div>
+          <div class="data-row" style="color: #dc2626;"><span>결론:</span> <b>입체도형의 닮음이 성립하지 않음</b></div>
         `;
       }
     }
@@ -233,7 +273,7 @@ class SolidLab {
     if (!this.canvas || !this.camera || !this.renderer) return;
     const parent = this.canvas.parentElement;
     const width = parent.clientWidth || 800;
-    const height = Math.max(480, parent.clientHeight || 520);
+    const height = Math.max(500, parent.clientHeight || 520);
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();

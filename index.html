@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Starmix Similarity Lab | 도형의 닮음 탐구소</title>
+  <title>Starmix Similarity Lab | 영서중학교 2학년 7반 수학 연구수업</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,6 +16,7 @@
         <div class="brand-title">
           Starmix Similarity Lab
           <span class="grade-badge">중2 수학 · 도형의 닮음</span>
+          <span class="school-tag">영서중학교 2학년 7반 (지도교사: 임종윤)</span>
         </div>
       </div>
     </div>
@@ -25,16 +26,16 @@
     </div>
   </header>
 
-  <!-- Tab Navigation -->
+  <!-- Tab Navigation (1차시 3단계 수업 흐름) -->
   <nav class="tab-navigation">
     <button class="tab-btn active" data-tab="tab-plane">
-      <span>📐</span> 1. 평면도형 닮음 랩
+      <span>📐</span> 1. 평면도형 닮음 랩 (작도 & 왜곡)
     </button>
     <button class="tab-btn" data-tab="tab-solid">
-      <span>🧊</span> 2. 3D 입체도형 닮음 랩
+      <span>🧊</span> 2. 3D 입체도형 닮음 랩 (축 분리)
     </button>
     <button class="tab-btn" data-tab="tab-missions">
-      <span>🎯</span> 3. 도전 미션 & 퀴즈
+      <span>🎯</span> 3. 도전 미션 & 형성평가
     </button>
   </nav>
 
@@ -48,73 +49,110 @@
         <div class="viewport-card">
           <div class="viewport-toolbar">
             <div class="toolbar-group">
-              <span>📍 기준 도형: <b>△ABC (초록)</b></span>
-              <span style="margin: 0 0.5rem; color: #cbd5e1;">|</span>
-              <span>변형 도형: <b>△DEF (보라/빨강)</b></span>
+              <span>📍 기준 도형: <b style="color: #059669;">△ABC (밑변 3, 높이 4)</b></span>
+              <span style="margin: 0 0.2rem; color: #cbd5e1;">|</span>
+              <span>확대 도형: <b style="color: #4f46e5;">△DEF</b></span>
             </div>
+
+            <!-- 측정 도구 칩 (지도안 유의사항: 각도 측정기, 길이 눈금 활용 독려) -->
             <div class="toolbar-group">
-              <label style="cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+              <label class="tool-chip">
+                <input type="checkbox" id="toggleAngles" checked>
+                <span>📐 각도 측정기</span>
+              </label>
+              <label class="tool-chip">
+                <input type="checkbox" id="toggleLengths" checked>
+                <span>📏 길이 눈금</span>
+              </label>
+              <label class="tool-chip">
                 <input type="checkbox" id="toggleOverlay">
-                <span>꼭짓점 포개어보기 (Overlay)</span>
+                <span>포개어보기 (Overlay)</span>
               </label>
             </div>
           </div>
 
           <div class="canvas-container">
-            <div class="canvas-hint">💡 모눈 위에서 도형이 어떻게 확대·왜곡되는지 관찰해보세요.</div>
+            <div class="canvas-hint">💡 모눈 위에서 삼각형의 각도와 변의 길이가 어떻게 변하는지 관찰해보세요.</div>
             <canvas id="planeCanvas"></canvas>
           </div>
         </div>
 
         <!-- Right Control Sidebar -->
         <aside class="control-sidebar">
-          <!-- Scaling Controls -->
+
+          <!-- Sub-mode Selector (Explore vs Draw) -->
           <div class="card">
-            <div class="card-title">
-              <span>확대·축소 조작기</span>
-              <span id="planeScaleRatioText" style="font-size: 0.8rem; color: var(--primary);">2.0배</span>
+            <div class="card-title">학습 모드 선택</div>
+            <div class="submode-switch">
+              <button id="btnSubmodeExplore" class="submode-btn active">🔍 탐구 & 왜곡 실험</button>
+              <button id="btnSubmodeDraw" class="submode-btn">✏️ 모눈에 직접 작도</button>
             </div>
 
-            <div class="control-group">
-              <div class="control-label">
-                <span>배율 조절 (k배)</span>
-                <span id="planeScaleVal" class="control-value">2.0배</span>
+            <!-- 1) Explore Controls -->
+            <div id="exploreControls">
+              <div class="control-group">
+                <div class="control-label">
+                  <span>확대 배율 (k배)</span>
+                  <span id="planeScaleVal" class="control-value">2.0배</span>
+                </div>
+                <input type="range" id="planeScaleSlider" min="0.5" max="3.0" step="0.5" value="2.0">
               </div>
-              <input type="range" id="planeScaleSlider" min="0.5" max="3.0" step="0.5" value="2.0">
-            </div>
 
-            <div class="control-group">
-              <div class="control-label"><span>변형 실험 모드</span></div>
-              <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <button id="btnModeProportional" class="btn btn-primary btn-sm btn-block">
-                  ✓ 정비율 확대 (가로·세로 k배)
-                </button>
-                <button id="btnModeWidthOnly" class="btn btn-secondary btn-sm btn-block">
-                  ⚠ 왜곡 실험: 가로만 k배 늘이기
-                </button>
-                <button id="btnModeHeightOnly" class="btn btn-secondary btn-sm btn-block">
-                  ⚠ 왜곡 실험: 세로만 k배 늘이기
-                </button>
+              <div class="control-group">
+                <div class="control-label"><span>변형 실험 (인지적 갈등 유발)</span></div>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                  <button id="btnModeProportional" class="btn btn-primary btn-sm btn-block">
+                    ✓ 정비율 확대 (가로·세로 k배)
+                  </button>
+                  <button id="btnModeWidthOnly" class="btn btn-secondary btn-sm btn-block">
+                    ⚠ 왜곡 실험: 가로만 2배 늘이기
+                  </button>
+                  <button id="btnModeHeightOnly" class="btn btn-secondary btn-sm btn-block">
+                    ⚠ 왜곡 실험: 세로만 2배 늘이기
+                  </button>
+                </div>
               </div>
+
+              <button id="btnResetPlane" class="btn btn-secondary btn-sm btn-block" style="margin-top: 0.5rem;">
+                ↺ 처음 상태로 초기화
+              </button>
             </div>
 
-            <button id="btnResetPlane" class="btn btn-secondary btn-sm btn-block" style="margin-top: 0.5rem;">
-              ↺ 처음 상태로 초기화
-            </button>
+            <!-- 2) Student Interactive Drawing Controls -->
+            <div id="drawControls" style="display: none;">
+              <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.75rem;">
+                <b>[작도 미션]</b> 원래 삼각형 △ABC의 <b>2배 확대된 닮은 삼각형 △DEF</b>를 모눈 위에 직접 점을 찍어 완성해보세요!
+              </div>
+
+              <div id="drawingStatusText" style="font-size: 0.82rem; font-weight: 600; color: var(--primary); background: var(--primary-light); padding: 0.5rem; border-radius: var(--radius-sm); margin-bottom: 0.75rem;">
+                모눈 위의 점을 클릭하여 첫 번째 꼭짓점(D)을 찍으세요.
+              </div>
+
+              <div class="btn-group-2">
+                <button id="btnClearDrawing" class="btn btn-secondary btn-sm">↺ 다시 찍기</button>
+                <button id="btnCheckDrawing" class="btn btn-primary btn-sm">✓ 작도 검증</button>
+              </div>
+
+              <div id="drawEvaluationResult" style="margin-top: 0.75rem;"></div>
+            </div>
           </div>
 
           <!-- Similarity Analysis Result -->
           <div class="card">
-            <div class="card-title">수학적 분석 & 닮음 판정</div>
+            <div class="card-title">
+              <span>수학적 분석 & 닮음 판정</span>
+              <span id="planeScaleRatioText" style="font-size: 0.8rem; color: var(--primary);">2.0배</span>
+            </div>
             <div id="planeSimilarityBadge" class="badge-similarity yes">
               ✓ 닮음 관계 성립 (△ABC ∽ △DEF)
             </div>
             <div id="planeAnalysisDetail" class="data-box">
-              <div class="data-row"><span>대응변의 비:</span> <b>1 : 2.0 (일정)</b></div>
-              <div class="data-row"><span>대응각의 크기:</span> <b>모두 일치</b></div>
+              <div class="data-row"><span>대응변의 비:</span> <b>1 : 2.0 (모두 일정)</b></div>
+              <div class="data-row"><span>대응각의 크기:</span> <b>90°, 53°, 37° (불변)</b></div>
               <div class="data-row"><span>닮음비:</span> <b>1 : 2.0</b></div>
             </div>
           </div>
+
         </aside>
       </div>
     </section>
@@ -126,7 +164,7 @@
         <div class="viewport-card">
           <div class="viewport-toolbar">
             <div class="toolbar-group">
-              <span>🧊 3D 공간 뷰어 (마우스/터치 드래그로 360° 회전 및 줌)</span>
+              <span>🧊 3D 공간 뷰어 (기준 직육면체: <b>가로 2 × 세로 3 × 높이 4</b>)</span>
             </div>
             <div class="toolbar-group">
               <button id="btnResetSolidView" class="btn btn-secondary btn-sm">시점 초기화</button>
@@ -134,7 +172,7 @@
           </div>
 
           <div class="canvas-container">
-            <div class="canvas-hint">🖱️ 화면을 드래그하여 입체도형의 면과 모서리를 다각도에서 관찰하세요.</div>
+            <div class="canvas-hint">🖱️ 화면을 터치/드래그하여 360도로 회전하며 입체도형의 면과 모서리를 관찰하세요.</div>
             <canvas id="threeCanvas"></canvas>
           </div>
         </div>
@@ -142,42 +180,53 @@
         <!-- Right Control Sidebar -->
         <aside class="control-sidebar">
           <div class="card">
-            <div class="card-title">입체도형 선택 & 조작</div>
+            <div class="card-title">입체도형 조작 & 지도안 프리셋</div>
 
+            <!-- Presets according to lesson plan -->
             <div class="control-group">
-              <div class="control-label"><span>도형 형태</span></div>
-              <select id="solidShapeSelect" style="width: 100%; padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <option value="box">직육면체 (Cuboid)</option>
-                <option value="prism">삼각기둥 (Prism)</option>
-                <option value="pyramid">사각뿔 (Pyramid)</option>
-              </select>
+              <div class="control-label"><span>지도안 핵심 실험 프리셋</span></div>
+              <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                <button id="btnPreset15" class="btn btn-secondary btn-sm btn-block">
+                  1. 전체 모서리 1.5배 균일 확대 (닮음)
+                </button>
+                <button id="btnPreset20" class="btn btn-primary btn-sm btn-block">
+                  2. 전체 모서리 2.0배 균일 확대 (닮음)
+                </button>
+                <button id="btnModeAxisSplit" class="btn btn-danger btn-sm btn-block">
+                  3. [축 분리 모드] 높이만 3배 왜곡 (비닮음)
+                </button>
+              </div>
             </div>
 
             <div class="control-group">
               <div class="control-label">
                 <span>전체 모서리 균일 확대 (k배)</span>
-                <span id="solidScaleAllVal" class="control-value">1.8배</span>
+                <span id="solidScaleAllVal" class="control-value">1.5배</span>
               </div>
-              <input type="range" id="solidScaleAll" min="0.5" max="2.5" step="0.1" value="1.8">
+              <input type="range" id="solidScaleAll" min="0.5" max="2.5" step="0.1" value="1.5">
             </div>
 
             <div class="control-group">
               <div class="control-label">
-                <span>[왜곡 실험] 높이만 조절</span>
-                <span id="solidHeightVal" class="control-value">1.8배</span>
+                <span>높이만 개별 조절 (축 분리)</span>
+                <span id="solidHeightVal" class="control-value">1.5배</span>
               </div>
-              <input type="range" id="solidHeightSlider" min="0.5" max="3.0" step="0.1" value="1.8">
+              <input type="range" id="solidHeightSlider" min="0.5" max="3.0" step="0.1" value="1.5">
             </div>
           </div>
 
+          <!-- Solid Similarity Analysis -->
           <div class="card">
-            <div class="card-title">입체 닮음 판정 결과</div>
+            <div class="card-title">입체도형 닮음 판정 결과</div>
             <div id="solidSimilarityBadge" class="badge-similarity yes">
               ✓ 입체도형 닮음 성립
             </div>
             <div id="solidAnalysisDetail" class="data-box">
-              <div class="data-row"><span>대응 모서리 비:</span> <b>1 : 1.8 (균일)</b></div>
+              <div class="data-row"><span>기준 규격:</span> <b>가로 2 × 세로 3 × 높이 4</b></div>
+              <div class="data-row"><span>확대 규격:</span> <b>가로 3.0 × 세로 4.5 × 높이 6.0</b></div>
+              <div class="data-row"><span>대응 모서리 비:</span> <b>1 : 1.5 (균일)</b></div>
               <div class="data-row"><span>대응 면의 관계:</span> <b>모든 면이 닮은 평면도형</b></div>
+              <div class="data-row"><span>입체 닮음비:</span> <b>1 : 1.5</b></div>
             </div>
           </div>
         </aside>
@@ -197,18 +246,22 @@
   <div id="helpModal" class="modal-backdrop">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">📖 수업 탐구 안내 (도형의 닮음)</h3>
+        <h3 class="modal-title">📖 영서중학교 2학년 7반 수학 수업 안내</h3>
         <button id="btnCloseHelp" class="close-btn">&times;</button>
       </div>
       <div style="font-size: 0.95rem; line-height: 1.6; color: var(--text-muted);">
         <p style="margin-bottom: 0.75rem;">
+          <b>[단원]</b> Ⅳ. 도형의 닮음과 피타고라스 정리 > 1. 도형의 닮음 > 01. 닮은 도형<br>
+          <b>[지도교사]</b> 임종윤 선생님
+        </p>
+        <p style="margin-bottom: 0.75rem;">
           <b>1. 탐구 목표:</b> 한 도형을 일정한 비율로 확대하거나 축소했을 때 변하는 것과 변하지 않는 것을 스스로 찾아봅니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>2. 평면 랩(1단계):</b> 가로만 늘렸을 때 각도가 어떻게 일그러지는지 확인하고, 정비율 확대 시 <code>포개어보기(Overlay)</code>를 통해 각도가 그대로 유지됨을 관찰하세요.
+          <b>2. 평면 랩(1단계):</b> 가로만 늘렸을 때 각도가 어떻게 일그러지는지 확인하고, 정비율 확대 시 <code>포개어보기(Overlay)</code>와 <code>각도 측정기</code>를 통해 각도가 그대로 유지됨을 관찰하세요.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>3. 입체 랩(2단계):</b> 3차원 공간에서 직육면체를 회전시키며, 모서리뿐 아니라 각 면(직사각형) 역시 닮음이 되어야 전체 입체가 닮음이 됨을 이해합니다.
+          <b>3. 입체 랩(2단계):</b> <code>[축 분리 모드]</code>를 통해 높이만 늘렸을 때 옆면 직사각형의 모양이 변하여 입체 닮음이 깨짐을 확인하세요.
         </p>
         <div style="background: var(--bg-subtle); padding: 0.75rem; border-radius: var(--radius-md); margin-top: 1rem; color: var(--text-main);">
           <b>💡 닮음의 기호:</b> $\triangle ABC \sim \triangle DEF$ (대응하는 점의 순서를 꼭 맞춰 적어야 합니다!)
