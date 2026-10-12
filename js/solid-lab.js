@@ -54,6 +54,13 @@ class SolidLab {
     this.detachStartTime = 0;
     this.startDetachVal = 0.0;
 
+    // 2D Flat Face Stage (우측 분리 평면 패널)
+    this.flatStageActive = false;
+    this.flatOverlayMode = false;
+    this.flatCanvas = null;
+    this.flatCtx = null;
+    this.flatStageEl = null;
+
     this.init();
   }
 
@@ -62,6 +69,7 @@ class SolidLab {
     this.createMeshes();
     this.setupControls();
     this.setupRaycasting();
+    this.initFlatFaceStage();
     this.selectFace('front', false); // Initial selection without camera jump
     this.updateDimensionLabels();
     this.animate();
@@ -197,6 +205,9 @@ class SolidLab {
     this.updateStatus(isSimilar);
     this.updateDimensionLabels();
     this.rebuildDetachedFaces();
+    if (this.flatStageActive) {
+      this.renderFlatFaceCanvas();
+    }
   }
 
   /* ---------------- Camera Focus & Close-Up Animation ---------------- */
@@ -220,27 +231,35 @@ class SolidLab {
     // Trigger Detached Face Pop-Out Animation (0.0 -> 1.0)
     this.startDetachAnimation(1.0);
 
+    // Frame 3D cuboids on the left side of the viewport so the right side is open for the 2D stage
+    const lookAtX = 1.4;
+    const camX = 3.2;
+
     if (faceKey === 'front') {
       const maxZ = Math.max(1.5, curD / 2);
-      const camPos = new THREE.Vector3(0, midY, maxZ + 9.5);
-      const lookAt = new THREE.Vector3(0, midY, maxZ + 2.5);
+      const camPos = new THREE.Vector3(camX, midY + 1.2, maxZ + 10.2);
+      const lookAt = new THREE.Vector3(lookAtX, midY, maxZ + 1.2);
       this.animateCameraTo(camPos, lookAt, 850);
     } else if (faceKey === 'top') {
       const topY = Math.max(4.0, curH);
-      const camPos = new THREE.Vector3(0, topY + 9.5, 3.2);
-      const lookAt = new THREE.Vector3(0, topY + 2.2, 0);
+      const camPos = new THREE.Vector3(camX, topY + 10.2, 3.8);
+      const lookAt = new THREE.Vector3(lookAtX, topY + 1.2, 0);
       this.animateCameraTo(camPos, lookAt, 850);
     } else if (faceKey === 'side') {
       const maxZ = Math.max(1.5, curD / 2);
-      const camPos = new THREE.Vector3(0, midY, maxZ + 9.8);
-      const lookAt = new THREE.Vector3(0, midY, maxZ + 2.6);
+      const camPos = new THREE.Vector3(camX + 1.2, midY + 1.2, maxZ + 10.2);
+      const lookAt = new THREE.Vector3(lookAtX, midY, maxZ + 1.2);
       this.animateCameraTo(camPos, lookAt, 850);
     }
+
+    // Open the 2D Flat Face Stage on the right side!
+    this.openFlatFaceStage(faceKey);
   }
 
   resetCameraView() {
     // Dock detached faces back into solid bodies (1.0 -> 0.0)
     this.startDetachAnimation(0.0);
+    this.closeFlatFaceStage();
 
     const camPos = new THREE.Vector3(7.5, 6.5, 10.5);
     const lookAt = new THREE.Vector3(0, 2.0, 0);
@@ -874,6 +893,339 @@ class SolidLab {
           </div>
         </div>
       `;
+    }
+  }
+
+  /* ---------------- 2D Flat Face Separation Stage Methods ---------------- */
+  initFlatFaceStage() {
+    this.flatCanvas = document.getElementById('flatFaceCanvas');
+    this.flatCtx = this.flatCanvas ? this.flatCanvas.getContext('2d') : null;
+    this.flatStageEl = document.getElementById('flatFaceStage');
+
+    const btnClose = document.getElementById('btnCloseFlatStage');
+    if (btnClose) {
+      btnClose.addEventListener('click', () => {
+        this.resetCameraView();
+      });
+    }
+
+    const toggleOverlay = document.getElementById('toggleFlatOverlay');
+    if (toggleOverlay) {
+      toggleOverlay.addEventListener('change', (e) => {
+        this.flatOverlayMode = e.target.checked;
+        this.renderFlatFaceCanvas();
+      });
+    }
+  }
+
+  openFlatFaceStage(faceKey) {
+    if (!this.flatStageEl) {
+      this.flatStageEl = document.getElementById('flatFaceStage');
+    }
+    if (!this.flatStageEl) return;
+
+    this.flatStageActive = true;
+    this.flatStageEl.classList.add('active');
+
+    const badge = document.getElementById('flatStageFaceBadge');
+    if (badge) {
+      const faceName = (faceKey === 'front' ? '앞면' : (faceKey === 'top' ? '윗면' : '옆면'));
+      badge.textContent = faceName;
+    }
+
+    this.renderFlatFaceCanvas();
+  }
+
+  closeFlatFaceStage() {
+    this.flatStageActive = false;
+    if (this.flatStageEl) {
+      this.flatStageEl.classList.remove('active');
+    }
+  }
+
+  renderFlatFaceCanvas() {
+    if (!this.flatCanvas || !this.flatCtx) {
+      this.flatCanvas = document.getElementById('flatFaceCanvas');
+      if (this.flatCanvas) this.flatCtx = this.flatCanvas.getContext('2d');
+    }
+    if (!this.flatCanvas || !this.flatCtx) return;
+
+    const canvas = this.flatCanvas;
+    const ctx = this.flatCtx;
+
+    // Handle high DPI
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const displayW = Math.max(380, Math.floor(rect.width || 440));
+    const displayH = Math.max(200, Math.floor(rect.height || 230));
+
+    if (canvas.width !== displayW * dpr || canvas.height !== displayH * dpr) {
+      canvas.width = displayW * dpr;
+      canvas.height = displayH * dpr;
+    }
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    const width = displayW;
+    const height = displayH;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // 1. Blueprint Grid Background (모눈종이)
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= width; x += 18) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= height; y += 18) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Major grid lines
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.2;
+    for (let x = 0; x <= width; x += 90) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    // 2. Face Dimensions
+    let faceKor = '앞면';
+    let baseW = 2.0, baseH = 4.0;
+    let transW = 2.0 * this.scaleX, transH = 4.0 * this.scaleY;
+    let rW = this.scaleX, rH = this.scaleY;
+
+    if (this.selectedFace === 'top') {
+      faceKor = '윗면';
+      baseW = 2.0; baseH = 3.0;
+      transW = 2.0 * this.scaleX; transH = 3.0 * this.scaleZ;
+      rW = this.scaleX; rH = this.scaleZ;
+    } else if (this.selectedFace === 'side') {
+      faceKor = '옆면';
+      baseW = 3.0; baseH = 4.0;
+      transW = 3.0 * this.scaleZ; transH = 4.0 * this.scaleY;
+      rW = this.scaleZ; rH = this.scaleY;
+    }
+
+    const isSimilar = Math.abs(rW - rH) < 0.01;
+    const groundY = height - 38;
+
+    if (!this.flatOverlayMode) {
+      // ---------------- Mode A: Side-by-Side (나란히 배치) ----------------
+      let unit = Math.min((width - 130) / (baseW + transW), (height - 70) / Math.max(baseH, transH));
+      unit = Math.max(12, Math.min(26, unit));
+
+      const rect1W = baseW * unit;
+      const rect1H = baseH * unit;
+      const rect1X = 28;
+      const rect1Y = groundY - rect1H;
+
+      const rect2W = transW * unit;
+      const rect2H = transH * unit;
+      const rect2X = width - 28 - rect2W;
+      const rect2Y = groundY - rect2H;
+
+      // Base Rectangle (Emerald Green)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.16)';
+      ctx.fillRect(rect1X, rect1Y, rect1W, rect1H);
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(rect1X, rect1Y, rect1W, rect1H);
+
+      // Base Right-angle indicator
+      const ra1 = Math.min(8, rect1W * 0.25, rect1H * 0.25);
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(rect1X, groundY - ra1, ra1, ra1);
+
+      // Base Dimension Labels
+      ctx.font = 'bold 11px Pretendard, sans-serif';
+      ctx.fillStyle = '#065f46';
+      ctx.textAlign = 'center';
+      ctx.fillText(`가로 ${baseW}`, rect1X + rect1W / 2, groundY + 16);
+
+      ctx.save();
+      ctx.translate(rect1X - 12, rect1Y + rect1H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(`세로 ${baseH}`, 0, 0);
+      ctx.restore();
+
+      ctx.font = 'bold 12px Pretendard, sans-serif';
+      ctx.fillStyle = '#047857';
+      ctx.fillText(`기준 ${faceKor}`, rect1X + rect1W / 2, rect1Y - 8);
+
+      // Transformed Rectangle (Indigo or Red)
+      const transStroke = isSimilar ? '#4f46e5' : '#dc2626';
+      const transFill = isSimilar ? 'rgba(79, 70, 229, 0.16)' : 'rgba(239, 68, 68, 0.16)';
+      const transText = isSimilar ? '#3730a3' : '#991b1b';
+
+      ctx.fillStyle = transFill;
+      ctx.fillRect(rect2X, rect2Y, rect2W, rect2H);
+      ctx.strokeStyle = transStroke;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(rect2X, rect2Y, rect2W, rect2H);
+
+      // Trans Right-angle indicator
+      const ra2 = Math.min(8, rect2W * 0.25, rect2H * 0.25);
+      ctx.strokeStyle = transStroke;
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(rect2X, groundY - ra2, ra2, ra2);
+
+      // Trans Dimension Labels
+      ctx.font = 'bold 11px Pretendard, sans-serif';
+      ctx.fillStyle = transText;
+      ctx.textAlign = 'center';
+      ctx.fillText(`가로 ${transW.toFixed(1)}`, rect2X + rect2W / 2, groundY + 16);
+
+      ctx.save();
+      ctx.translate(rect2X - 12, rect2Y + rect2H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(`세로 ${transH.toFixed(1)}`, 0, 0);
+      ctx.restore();
+
+      ctx.font = 'bold 12px Pretendard, sans-serif';
+      ctx.fillStyle = transText;
+      ctx.fillText(`확대 ${faceKor}`, rect2X + rect2W / 2, rect2Y - 8);
+
+      // Center Similarity Relation Badge
+      const midX = (rect1X + rect1W + rect2X) / 2;
+      const midY = groundY - Math.max(rect1H, rect2H) / 2;
+
+      ctx.fillStyle = isSimilar ? '#ecfdf5' : '#fef2f2';
+      ctx.strokeStyle = isSimilar ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const bW = 68, bH = 44;
+      ctx.roundRect ? ctx.roundRect(midX - bW / 2, midY - bH / 2, bW, bH, 8) : ctx.rect(midX - bW / 2, midY - bH / 2, bW, bH);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = 'bold 20px Pretendard, sans-serif';
+      ctx.fillStyle = isSimilar ? '#059669' : '#dc2626';
+      ctx.textAlign = 'center';
+      ctx.fillText(isSimilar ? '∽' : '≁', midX, midY + 1);
+
+      ctx.font = 'bold 10px Pretendard, sans-serif';
+      ctx.fillText(isSimilar ? `1 : ${rW.toFixed(1)}` : '불일치', midX, midY + 15);
+
+    } else {
+      // ---------------- Mode B: Overlay (포개어보기) ----------------
+      let unit = Math.min((width - 150) / transW, (height - 65) / transH);
+      unit = Math.max(12, Math.min(30, unit));
+
+      const originX = 50;
+      const rect1W = baseW * unit;
+      const rect1H = baseH * unit;
+      const rect2W = transW * unit;
+      const rect2H = transH * unit;
+
+      const transStroke = isSimilar ? '#4f46e5' : '#dc2626';
+      const transFill = isSimilar ? 'rgba(79, 70, 229, 0.14)' : 'rgba(239, 68, 68, 0.14)';
+
+      // 1. Draw Transformed Rectangle
+      ctx.fillStyle = transFill;
+      ctx.fillRect(originX, groundY - rect2H, rect2W, rect2H);
+      ctx.strokeStyle = transStroke;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(originX, groundY - rect2H, rect2W, rect2H);
+
+      // 2. Draw Base Rectangle Overlaid at Same Origin
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.28)';
+      ctx.fillRect(originX, groundY - rect1H, rect1W, rect1H);
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(originX, groundY - rect1H, rect1W, rect1H);
+      ctx.setLineDash([]);
+
+      // 3. Diagonal Lines Comparison
+      // Base Diagonal (Green)
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(originX, groundY);
+      ctx.lineTo(originX + rect1W, groundY - rect1H);
+      ctx.stroke();
+
+      // Transformed Diagonal (Indigo or Red)
+      ctx.strokeStyle = transStroke;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(originX, groundY);
+      ctx.lineTo(originX + rect2W, groundY - rect2H);
+      ctx.stroke();
+
+      // Top Alert Banner
+      ctx.fillStyle = isSimilar ? '#ecfdf5' : '#fef2f2';
+      ctx.strokeStyle = isSimilar ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 1.2;
+      const topBannerW = width - 40;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(20, 8, topBannerW, 26, 6) : ctx.rect(20, 8, topBannerW, 26);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = 'bold 11px Pretendard, sans-serif';
+      ctx.fillStyle = isSimilar ? '#065f46' : '#991b1b';
+      ctx.textAlign = 'center';
+      if (isSimilar) {
+        ctx.fillText(`✓ 포개어보기 증명: 두 직사각형의 대각선이 일직선으로 완벽히 포개어집니다! (닮음비 1 : ${rW.toFixed(1)})`, width / 2, 25);
+      } else {
+        ctx.fillText(`✗ 포개어보기 증명: 대각선의 기울기가 어긋나 모양이 일그러졌습니다! (비닮음)`, width / 2, 25);
+      }
+
+      // Legend
+      ctx.font = '11px Pretendard, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#059669';
+      ctx.fillText(`■ 기준 (${baseW}×${baseH})`, originX + rect2W + 15, groundY - rect2H + 18);
+      ctx.fillStyle = transStroke;
+      ctx.fillText(`■ 확대 (${transW.toFixed(1)}×${transH.toFixed(1)})`, originX + rect2W + 15, groundY - rect2H + 36);
+    }
+
+    ctx.restore();
+
+    // 4. Update Ratio Pill & Mathematical Proof
+    const pill = document.getElementById('flatRatioPill');
+    if (pill) {
+      if (isSimilar) {
+        pill.className = 'flat-ratio-pill';
+        pill.textContent = `대응면 닮음비 1 : ${rW.toFixed(1)}`;
+      } else {
+        pill.className = 'flat-ratio-pill distorted';
+        pill.textContent = `비율 왜곡 (가로 1:${rW.toFixed(1)} ≠ 세로 1:${rH.toFixed(1)})`;
+      }
+    }
+
+    const proofEl = document.getElementById('flatMathProof');
+    if (proofEl) {
+      if (isSimilar) {
+        proofEl.innerHTML = `
+          <div style="font-weight: 700; color: #065f46; margin-bottom: 0.25rem;">✓ 평면도형의 닮음 판정 성공 (모든 대응변의 비 일정)</div>
+          <div>• 가로 대응변의 비 = ${baseW} : ${transW.toFixed(1)} = <b>1 : ${rW.toFixed(1)}</b></div>
+          <div>• 세로 대응변의 비 = ${baseH} : ${transH.toFixed(1)} = <b>1 : ${rH.toFixed(1)}</b></div>
+          <div style="margin-top: 0.35rem; color: #047857; font-size: 0.74rem;">
+            <b>성질 증명:</b> 두 직사각형의 대응변의 길이의 비가 <b>1 : ${rW.toFixed(1)}</b>로 일정하고 대응각(90°)이 같으므로 <b>두 직사각형은 닮음(∽)</b>입니다.
+          </div>
+        `;
+      } else {
+        proofEl.innerHTML = `
+          <div style="font-weight: 700; color: #991b1b; margin-bottom: 0.25rem;">✗ 평면도형의 닮음 불성립 (직사각형 모양 왜곡)</div>
+          <div>• 가로 대응변의 비 = ${baseW} : ${transW.toFixed(1)} = <b>1 : ${rW.toFixed(1)}</b></div>
+          <div>• 세로 대응변의 비 = ${baseH} : ${transH.toFixed(1)} = <b>1 : ${rH.toFixed(1)}</b></div>
+          <div style="margin-top: 0.35rem; color: #b91c1c; font-size: 0.74rem;">
+            <b>성질 증명:</b> 가로 배율(1:${rW.toFixed(1)})과 세로 배율(1:${rH.toFixed(1)})이 달라 <b>직사각형 모양이 일그러졌습니다.</b> 대응면이 닮음이 아니므로 입체도형도 닮음이 아닙니다.
+          </div>
+        `;
+      }
     }
   }
 
