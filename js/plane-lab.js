@@ -118,9 +118,34 @@ class PlaneLab {
       });
     }
 
+    const btnTriggerOverlay = document.getElementById('btnTriggerOverlay');
+
+    const updateOverlayUI = (isActive) => {
+      if (toggleOverlay) toggleOverlay.checked = isActive;
+      if (btnTriggerOverlay) {
+        btnTriggerOverlay.textContent = isActive ? '↺ 포개어보기 해제' : '✨ △ABC 확대하여 △DEF에 포개어보기 (합동 확인)';
+        if (isActive) {
+          btnTriggerOverlay.classList.remove('btn-secondary');
+          btnTriggerOverlay.classList.add('btn-primary');
+        } else {
+          btnTriggerOverlay.classList.remove('btn-primary');
+          btnTriggerOverlay.classList.add('btn-secondary');
+        }
+      }
+    };
+
     if (toggleOverlay) {
       toggleOverlay.addEventListener('change', (e) => {
+        updateOverlayUI(e.target.checked);
         this.animateOverlay(e.target.checked ? 1.0 : 0.0);
+      });
+    }
+
+    if (btnTriggerOverlay) {
+      btnTriggerOverlay.addEventListener('click', () => {
+        const nextState = this.overlayProgress < 0.5;
+        updateOverlayUI(nextState);
+        this.animateOverlay(nextState ? 1.0 : 0.0);
       });
     }
 
@@ -187,8 +212,8 @@ class PlaneLab {
         this.scaleX = 2.0;
         this.scaleY = 2.0;
         updateSliderUI();
+        updateOverlayUI(false);
         this.animateOverlay(0.0);
-        if (toggleOverlay) toggleOverlay.checked = false;
         const simInput = document.getElementById('inputSimSymbol');
         const simFeedback = document.getElementById('simSymbolFeedback');
         if (simInput) simInput.value = '';
@@ -722,7 +747,7 @@ class PlaneLab {
     if (this.overlayAnimId) cancelAnimationFrame(this.overlayAnimId);
     const startVal = this.overlayProgress;
     const startTime = performance.now();
-    const duration = 650; // ms
+    const duration = 850; // ms: smooth observation of expansion and glide
 
     const step = (now) => {
       const elapsed = now - startTime;
@@ -747,8 +772,8 @@ class PlaneLab {
 
   getTransformedPoly() {
     const originPt = this.basePoly[0]; // A(1, 1)
-    const currentOffsetX = this.transformedOffset.x * (1.0 - this.overlayProgress);
-    const currentOffsetY = this.transformedOffset.y * (1.0 - this.overlayProgress);
+    const currentOffsetX = this.transformedOffset.x; // Stationary at (6, 1)
+    const currentOffsetY = this.transformedOffset.y;
 
     return this.basePoly.map((pt, idx) => {
       const dx = (pt.x - originPt.x) * this.scaleX;
@@ -762,57 +787,319 @@ class PlaneLab {
     });
   }
 
+  getExpandingPoly() {
+    if (this.overlayProgress < 0.001) return null;
+
+    const t = this.overlayProgress;
+    const isSimilar = Math.abs(this.scaleX - this.scaleY) < 0.001;
+    // In middle-school similarity, we test similarity by enlarging triangle ABC uniformly by factor k.
+    const targetScale = isSimilar ? this.scaleX : ((Math.abs(this.scaleX - 1.0) > 0.01) ? this.scaleX : this.scaleY);
+    const currentScale = 1.0 + (targetScale - 1.0) * t;
+
+    const originA = this.basePoly[0]; // A(1, 1)
+    const targetOriginD = { x: originA.x + this.transformedOffset.x, y: originA.y + this.transformedOffset.y }; // D(6, 1)
+
+    // Current position of vertex A'
+    const curA = {
+      x: originA.x + (targetOriginD.x - originA.x) * t,
+      y: originA.y + (targetOriginD.y - originA.y) * t
+    };
+
+    const labels = ["A'", "B'", "C'"];
+    return this.basePoly.map((pt, idx) => {
+      const dx = (pt.x - originA.x) * currentScale;
+      const dy = (pt.y - originA.y) * currentScale;
+      return {
+        x: curA.x + dx,
+        y: curA.y + dy,
+        label: labels[idx]
+      };
+    });
+  }
+
+  renderOverlayMotion(expandingPoly, isSimilar, targetScale, currentScale) {
+    if (!expandingPoly) return;
+    const t = this.overlayProgress;
+    this.ctx.save();
+
+    // 1. Motion Trail Line from start A to current A'
+    if (t > 0.05 && t < 0.98) {
+      const sStart = this.toScreen(this.basePoly[0]);
+      const sCur = this.toScreen(expandingPoly[0]);
+      this.ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+      this.ctx.lineWidth = 2;
+      this.ctx.setLineDash([4, 4]);
+      this.ctx.beginPath();
+      this.ctx.moveTo(sStart.x, sStart.y);
+      this.ctx.lineTo(sCur.x, sCur.y);
+      this.ctx.stroke();
+      this.ctx.setLineDash([]);
+    }
+
+    // 2. Draw expanding triangle polygon
+    this.ctx.beginPath();
+    const first = this.toScreen(expandingPoly[0]);
+    this.ctx.moveTo(first.x, first.y);
+    for (let i = 1; i < expandingPoly.length; i++) {
+      const pt = this.toScreen(expandingPoly[i]);
+      this.ctx.lineTo(pt.x, pt.y);
+    }
+    this.ctx.closePath();
+
+    if (t >= 0.99) {
+      // Arrived at DEF
+      if (isSimilar) {
+        // Congruent: Glowing green aura & solid match highlight
+        this.ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        this.ctx.fill();
+
+        this.ctx.strokeStyle = '#059669';
+        this.ctx.lineWidth = 3.5;
+        this.ctx.stroke();
+
+        this.ctx.strokeStyle = '#34d399';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+
+        // Center celebration badge
+        const midP = {
+          x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
+          y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
+        };
+        const sMid = this.toScreen(midP);
+
+        this.ctx.font = 'bold 12px Pretendard, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        const txt = `✨ 완전히 포개어짐 (합동: △ABC ${targetScale.toFixed(1)}배 확대 ≡ △DEF)`;
+        const m = this.ctx.measureText(txt);
+        const bw = m.width + 18;
+        const bh = 26;
+
+        this.ctx.fillStyle = '#ecfdf5';
+        this.ctx.strokeStyle = '#059669';
+        this.ctx.lineWidth = 1.5;
+        if (this.ctx.roundRect) {
+          this.ctx.beginPath();
+          this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 6);
+          this.ctx.fill();
+          this.ctx.stroke();
+        } else {
+          this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+          this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+        }
+        this.ctx.fillStyle = '#065f46';
+        this.ctx.fillText(txt, sMid.x, sMid.y);
+
+        // Matching vertex badges
+        const matchLabels = ["A' ≡ D", "B' ≡ E", "C' ≡ F"];
+        expandingPoly.forEach((pt, idx) => {
+          const s = this.toScreen(pt);
+          this.ctx.fillStyle = '#059669';
+          this.ctx.beginPath();
+          this.ctx.arc(s.x, s.y, 6, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          this.ctx.font = 'bold 12px Pretendard, sans-serif';
+          this.ctx.fillStyle = '#065f46';
+          let offX = idx === 0 ? -24 : idx === 1 ? 24 : -20;
+          let offY = idx === 0 ? 16 : idx === 1 ? 16 : -18;
+          this.ctx.fillText(matchLabels[idx], s.x + offX, s.y + offY);
+        });
+      } else {
+        // Incongruent (Distorted)
+        this.ctx.fillStyle = 'rgba(2, 132, 199, 0.18)';
+        this.ctx.fill();
+
+        this.ctx.strokeStyle = '#0284c7';
+        this.ctx.lineWidth = 2.5;
+        this.ctx.setLineDash([6, 4]);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Center warning badge
+        const midP = {
+          x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
+          y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
+        };
+        const sMid = this.toScreen(midP);
+
+        this.ctx.font = 'bold 12px Pretendard, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        const txt = `✗ 완전히 포개어지지 않음 (합동 불성립: 왜곡)`;
+        const m = this.ctx.measureText(txt);
+        const bw = m.width + 18;
+        const bh = 26;
+
+        this.ctx.fillStyle = '#fef2f2';
+        this.ctx.strokeStyle = '#ef4444';
+        this.ctx.lineWidth = 1.5;
+        if (this.ctx.roundRect) {
+          this.ctx.beginPath();
+          this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 6);
+          this.ctx.fill();
+          this.ctx.stroke();
+        } else {
+          this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+          this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+        }
+        this.ctx.fillStyle = '#991b1b';
+        this.ctx.fillText(txt, sMid.x, sMid.y);
+
+        // Labels for expanded vertices
+        expandingPoly.forEach((pt) => {
+          const s = this.toScreen(pt);
+          this.ctx.fillStyle = '#0284c7';
+          this.ctx.beginPath();
+          this.ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
+          this.ctx.fill();
+
+          this.ctx.font = 'bold 11px Pretendard, sans-serif';
+          this.ctx.fillStyle = '#0284c7';
+          this.ctx.fillText(`확대된 꼭짓점 ${pt.label}`, s.x + 16, s.y - 10);
+        });
+      }
+    } else {
+      // In flight: expanding and gliding
+      this.ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+      this.ctx.fill();
+      this.ctx.strokeStyle = '#059669';
+      this.ctx.lineWidth = 2.5;
+      this.ctx.stroke();
+
+      // Floating live progress badge inside moving triangle
+      const midP = {
+        x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
+        y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
+      };
+      const sMid = this.toScreen(midP);
+
+      this.ctx.font = 'bold 11px Pretendard, sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      const txt = `△ABC 확대 중: ${currentScale.toFixed(1)}배 🚀`;
+      const m = this.ctx.measureText(txt);
+      const bw = m.width + 16;
+      const bh = 22;
+
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      this.ctx.strokeStyle = '#059669';
+      this.ctx.lineWidth = 1.2;
+      if (this.ctx.roundRect) {
+        this.ctx.beginPath();
+        this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 5);
+        this.ctx.fill();
+        this.ctx.stroke();
+      } else {
+        this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+        this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
+      }
+      this.ctx.fillStyle = '#065f46';
+      this.ctx.fillText(txt, sMid.x, sMid.y);
+
+      // Moving vertices
+      expandingPoly.forEach((pt) => {
+        const s = this.toScreen(pt);
+        this.ctx.fillStyle = '#059669';
+        this.ctx.beginPath();
+        this.ctx.arc(s.x, s.y, 4.5, 0, Math.PI * 2);
+        this.ctx.fill();
+      });
+    }
+
+    this.ctx.restore();
+  }
+
   render() {
     this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     this.drawGrid();
 
-    // Overlay Guide / Status Banner
+    const isSimilar = Math.abs(this.scaleX - this.scaleY) < 0.001;
+    const targetScale = isSimilar ? this.scaleX : ((Math.abs(this.scaleX - 1.0) > 0.01) ? this.scaleX : this.scaleY);
+    const currentScale = 1.0 + (targetScale - 1.0) * this.overlayProgress;
+
+    // Top Status Banner during Overlay
     if (this.overlayProgress > 0.01) {
       this.ctx.save();
       if (this.overlayProgress >= 0.99) {
-        this.ctx.fillStyle = '#ecfdf5';
-        this.ctx.strokeStyle = '#10b981';
-        this.ctx.lineWidth = 1.2;
-        this.ctx.beginPath();
-        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 420, 28, 6) : this.ctx.rect(15, 12, 420, 28);
-        this.ctx.fill();
-        this.ctx.stroke();
+        if (isSimilar) {
+          this.ctx.fillStyle = '#ecfdf5';
+          this.ctx.strokeStyle = '#10b981';
+          this.ctx.lineWidth = 1.2;
+          this.ctx.beginPath();
+          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 490, 30, 6) : this.ctx.rect(15, 12, 490, 30);
+          this.ctx.fill();
+          this.ctx.stroke();
 
-        this.ctx.font = 'bold 12px Pretendard, sans-serif';
-        this.ctx.fillStyle = '#065f46';
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText('✓ 포개어보기: 점 A와 점 D(직각 꼭짓점)를 원점에 맞추어 포갰습니다!', 25, 30);
+          this.ctx.font = 'bold 12px Pretendard, sans-serif';
+          this.ctx.fillStyle = '#065f46';
+          this.ctx.textAlign = 'left';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(`🎉 [합동 확인 완료] △ABC를 ${targetScale.toFixed(1)}배 확대했더니 △DEF와 완전히 포개어집니다! (합동 성립 ➜ 닮음)`, 25, 27);
+        } else {
+          this.ctx.fillStyle = '#fef2f2';
+          this.ctx.strokeStyle = '#ef4444';
+          this.ctx.lineWidth = 1.2;
+          this.ctx.beginPath();
+          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 520, 30, 6) : this.ctx.rect(15, 12, 520, 30);
+          this.ctx.fill();
+          this.ctx.stroke();
+
+          this.ctx.font = 'bold 12px Pretendard, sans-serif';
+          this.ctx.fillStyle = '#991b1b';
+          this.ctx.textAlign = 'left';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(`⚠️ [합동 불성립] △ABC를 ${targetScale.toFixed(1)}배 확대해도 △DEF와 완전히 포개어지지 않습니다! (비율 왜곡 ➜ 닮음 아님)`, 25, 27);
+        }
       } else {
         this.ctx.fillStyle = '#eff6ff';
         this.ctx.strokeStyle = '#3b82f6';
         this.ctx.lineWidth = 1.2;
         this.ctx.beginPath();
-        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 340, 28, 6) : this.ctx.rect(15, 12, 340, 28);
+        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 440, 30, 6) : this.ctx.rect(15, 12, 440, 30);
         this.ctx.fill();
         this.ctx.stroke();
 
         this.ctx.font = 'bold 12px Pretendard, sans-serif';
         this.ctx.fillStyle = '#1d4ed8';
         this.ctx.textAlign = 'left';
-        this.ctx.fillText('← 삼각형 DEF가 좌측으로 이동하여 겹쳐지는 중...', 25, 30);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(`🚀 삼각형 ABC가 ${targetScale.toFixed(1)}배로 점차 확대되면서 △DEF로 이동 중...`, 25, 27);
       }
       this.ctx.restore();
     }
 
     // 1. Draw Reference Base Polygon ABC (Green)
     const baseAngles = ['90°', '53°', '37°'];
-    this.renderPolygon(this.basePoly, '#059669', 'rgba(16, 185, 129, 0.2)', '', baseAngles);
+    if (this.overlayProgress > 0.01) {
+      // While expanding/overlaying, show original base ABC with subtle watermark styling
+      this.ctx.save();
+      this.renderPolygon(this.basePoly, 'rgba(5, 150, 105, 0.45)', 'rgba(16, 185, 129, 0.08)', '', baseAngles);
+      const sA = this.toScreen(this.basePoly[0]);
+      this.ctx.font = 'bold 10px Pretendard, sans-serif';
+      this.ctx.fillStyle = '#059669';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText('기준 △ABC (1.0배)', sA.x + 40, sA.y + 22);
+      this.ctx.restore();
+    } else {
+      this.renderPolygon(this.basePoly, '#059669', 'rgba(16, 185, 129, 0.2)', '', baseAngles);
+    }
 
     if (this.currentTabMode === 'explore') {
-      // 2. Explore Mode: Draw Transformed Polygon DEF
+      // 2. Explore Mode: Draw Transformed Polygon DEF (Stationary)
       const transformedPoly = this.getTransformedPoly();
-      const isSimilar = Math.abs(this.scaleX - this.scaleY) < 0.001;
       const transColor = isSimilar ? '#4f46e5' : '#ef4444';
       const transFill = isSimilar ? 'rgba(79, 70, 229, 0.15)' : 'rgba(239, 68, 68, 0.12)';
-
       const transAngles = isSimilar ? ['90°', '53°', '37°'] : null;
       this.renderPolygon(transformedPoly, transColor, transFill, '', transAngles);
       this.updateAnalysisPanel(isSimilar);
+
+      // 3. Draw Expanding Triangle A'B'C' during Overlay Motion
+      if (this.overlayProgress > 0.001) {
+        const expandingPoly = this.getExpandingPoly();
+        this.renderOverlayMotion(expandingPoly, isSimilar, targetScale, currentScale);
+      }
     } else {
       // 3. Draw Mode: Draw Student's Polygon
       if (this.drawnPoints.length > 0) {
