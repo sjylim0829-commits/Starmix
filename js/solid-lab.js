@@ -1,7 +1,9 @@
 /**
- * Starmix Similarity Lab - Solid Geometry Module (3D Three.js 뷰어 + 대응면 클릭 분석 + 모서리 길이 3D 표시 v2.3)
- * Standard Cuboid: Width 2, Depth 3, Height 4
- * Using Multi-Material & High-DPI Camera-Facing 3D Sprites for Live Edge Dimensions
+ * Starmix Similarity Lab - Solid Geometry Module (v2.4)
+ * - Multi-Material Face Highlighting
+ * - Real-Time 3D Edge Dimension Labels (Sprites)
+ * - Smooth Camera Focus Animation & Close-Up on Selected Corresponding Faces
+ * - Direct 3D & 2D Corresponding Face Similarity Ratio (대응면 닮음비) Visualizer
  */
 
 class SolidLab {
@@ -23,6 +25,7 @@ class SolidLab {
     this.transMaterials = [];
     this.gridHelper = null;
     this.labelsGroup = null;
+    this.faceRatioSprite = null;
 
     // Scale State
     this.scaleX = 1.5; // Width (가로 2)
@@ -33,6 +36,16 @@ class SolidLab {
     this.selectedFace = 'front';
     this.showDimensions = true;
 
+    // Smooth Camera Animation State
+    this.isAnimating = false;
+    this.animStartTime = 0;
+    this.animDuration = 800; // ms
+    this.startCamPos = new THREE.Vector3();
+    this.targetCamPos = new THREE.Vector3();
+    this.startLookAt = new THREE.Vector3();
+    this.targetLookAt = new THREE.Vector3();
+    this.currentLookAt = new THREE.Vector3(0, 2.0, 0);
+
     this.init();
   }
 
@@ -41,7 +54,7 @@ class SolidLab {
     this.createMeshes();
     this.setupControls();
     this.setupRaycasting();
-    this.selectFace('front');
+    this.selectFace('front', false); // Initial selection without jump
     this.updateDimensionLabels();
     this.animate();
 
@@ -68,10 +81,10 @@ class SolidLab {
     this.renderer.shadowMap.enabled = true;
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.82);
     this.scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
     dirLight.position.set(12, 22, 12);
     dirLight.castShadow = true;
     this.scene.add(dirLight);
@@ -81,16 +94,17 @@ class SolidLab {
     this.gridHelper.position.y = -0.01;
     this.scene.add(this.gridHelper);
 
-    // Labels Group
+    // Labels & Banners Group
     this.labelsGroup = new THREE.Group();
     this.scene.add(this.labelsGroup);
 
-    // Controls
+    // OrbitControls
     if (THREE.OrbitControls) {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.05;
       this.controls.maxPolarAngle = Math.PI / 2 + 0.05;
+      this.controls.target.copy(this.currentLookAt);
     }
   }
 
@@ -116,7 +130,7 @@ class SolidLab {
     }
 
     this.baseMesh = new THREE.Mesh(geom, this.baseMaterials);
-    this.baseMesh.position.set(-3.5, 2.0, 0); // half height = 2.0
+    this.baseMesh.position.set(-3.5, 2.0, 0);
     this.baseMesh.castShadow = true;
 
     const baseEdges = new THREE.LineSegments(
@@ -152,7 +166,7 @@ class SolidLab {
     this.transMesh = new THREE.Mesh(geom, this.transMaterials);
     this.transMesh.scale.set(this.scaleX, this.scaleY, this.scaleZ);
 
-    // Dynamic ground alignment: position Y = (4.0 * scaleY) / 2
+    // Ground alignment: Y = (4.0 * scaleY) / 2
     this.transMesh.position.set(3.5, (4.0 * this.scaleY) / 2, 0);
     this.transMesh.castShadow = true;
 
@@ -168,7 +182,52 @@ class SolidLab {
     this.updateDimensionLabels();
   }
 
-  /* ---------------- 3D Dimension Edge Labels ---------------- */
+  /* ---------------- Camera Focus & Close-Up Animation ---------------- */
+  animateCameraTo(targetCamPos, targetLookAt, duration = 850) {
+    this.startCamPos.copy(this.camera.position);
+    this.targetCamPos.copy(targetCamPos);
+    this.startLookAt.copy(this.controls ? this.controls.target : this.currentLookAt);
+    this.targetLookAt.copy(targetLookAt);
+
+    this.animDuration = duration;
+    this.animStartTime = performance.now();
+    this.isAnimating = true;
+  }
+
+  focusOnCorrespondingFaces(faceKey) {
+    const curW = 2.0 * this.scaleX;
+    const curH = 4.0 * this.scaleY;
+    const curD = 3.0 * this.scaleZ;
+    const midY = (2.0 + curH / 2) / 2;
+
+    if (faceKey === 'front') {
+      // Direct front-facing close-up side-by-side
+      const maxZ = Math.max(1.5, curD / 2);
+      const camPos = new THREE.Vector3(0, midY, maxZ + 7.2);
+      const lookAt = new THREE.Vector3(0, midY, (1.5 + curD / 2) / 2);
+      this.animateCameraTo(camPos, lookAt, 850);
+    } else if (faceKey === 'top') {
+      // Top-down bird's eye close-up on the two top rectangles
+      const topY = Math.max(4.0, curH);
+      const camPos = new THREE.Vector3(0, topY + 7.8, 3.2);
+      const lookAt = new THREE.Vector3(0, topY - 0.5, 0);
+      this.animateCameraTo(camPos, lookAt, 850);
+    } else if (faceKey === 'side') {
+      // Angled side close-up focusing on the side rectangles
+      const rightX = 3.5 + curW / 2;
+      const camPos = new THREE.Vector3(rightX + 5.2, midY + 1.2, 3.8);
+      const lookAt = new THREE.Vector3(0.5, midY, 0);
+      this.animateCameraTo(camPos, lookAt, 850);
+    }
+  }
+
+  resetCameraView() {
+    const camPos = new THREE.Vector3(7.5, 6.5, 10.5);
+    const lookAt = new THREE.Vector3(0, 2.0, 0);
+    this.animateCameraTo(camPos, lookAt, 800);
+  }
+
+  /* ---------------- 3D Sprites (Dimensions & Similarity Ratio Banner) ---------------- */
   createLabelSprite(text, bgColor = '#059669', textColor = '#ffffff', width = 1.35, height = 0.52) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -191,12 +250,10 @@ class SolidLab {
     ctx.closePath();
     ctx.fill();
 
-    // Border
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    // Text
     ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillStyle = textColor;
     ctx.textAlign = 'center';
@@ -212,10 +269,50 @@ class SolidLab {
     return sprite;
   }
 
+  createBannerSprite(text, bgColor = '#d97706', textColor = '#ffffff', width = 3.6, height = 0.75) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 110;
+    const ctx = canvas.getContext('2d');
+
+    // Glowing Banner Badge
+    ctx.fillStyle = bgColor;
+    const x = 8, y = 8, w = 496, h = 94, r = 24;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 256, 55);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(width, height, 1);
+    sprite.renderOrder = 1000;
+    return sprite;
+  }
+
   updateDimensionLabels() {
     if (!this.labelsGroup) return;
 
-    // Clear previous sprites
     while (this.labelsGroup.children.length > 0) {
       const obj = this.labelsGroup.children[0];
       if (obj.material && obj.material.map) obj.material.map.dispose();
@@ -226,7 +323,6 @@ class SolidLab {
     if (!this.showDimensions) return;
 
     // 1. Labels for Base Cuboid (가로 2, 세로 3, 높이 4)
-    // Base position is (-3.5, 2.0, 0), Width=2(X), Height=4(Y), Depth=3(Z)
     const baseWidthSprite = this.createLabelSprite('가로: 2', '#059669');
     baseWidthSprite.position.set(-3.5, 0.28, 1.95);
     this.labelsGroup.add(baseWidthSprite);
@@ -246,7 +342,6 @@ class SolidLab {
     const isSimilar = (Math.abs(this.scaleX - this.scaleY) < 0.01) && (Math.abs(this.scaleY - this.scaleZ) < 0.01);
     const badgeColor = isSimilar ? '#4f46e5' : '#dc2626';
 
-    // Trans position is (3.5, curH/2, 0)
     const transWidthSprite = this.createLabelSprite(`가로: ${curW.toFixed(1)}`, badgeColor);
     transWidthSprite.position.set(3.5, 0.28, curD / 2 + 0.45);
     this.labelsGroup.add(transWidthSprite);
@@ -258,6 +353,34 @@ class SolidLab {
     const transHeightSprite = this.createLabelSprite(`높이: ${curH.toFixed(1)}`, badgeColor);
     transHeightSprite.position.set(3.5 - curW / 2 - 0.55, curH / 2, curD / 2);
     this.labelsGroup.add(transHeightSprite);
+
+    // 3. Central 3D Floating Ratio Banner for Focused Corresponding Faces
+    let faceKorName = '앞면';
+    let r1 = this.scaleX, r2 = this.scaleY;
+    if (this.selectedFace === 'top') {
+      faceKorName = '윗면';
+      r1 = this.scaleX; r2 = this.scaleZ;
+    } else if (this.selectedFace === 'side') {
+      faceKorName = '옆면';
+      r1 = this.scaleZ; r2 = this.scaleY;
+    }
+
+    const isFaceSimilar = Math.abs(r1 - r2) < 0.01;
+    let bannerText = '';
+    let bannerColor = '#d97706';
+
+    if (isFaceSimilar) {
+      bannerText = `🔍 [${faceKorName}] 대응면 닮음비 = 1 : ${r1.toFixed(1)}`;
+      bannerColor = '#059669'; // Green success
+    } else {
+      bannerText = `⚠ [${faceKorName}] 비율 불일치 (가로 1:${r1.toFixed(1)} ≠ 세로 1:${r2.toFixed(1)})`;
+      bannerColor = '#dc2626'; // Red warning
+    }
+
+    const bannerY = Math.max(4.5, curH + 0.8);
+    const bannerSprite = this.createBannerSprite(bannerText, bannerColor, '#ffffff');
+    bannerSprite.position.set(0, bannerY, (this.selectedFace === 'front' ? Math.max(1.5, curD/2) + 0.5 : 0));
+    this.labelsGroup.add(bannerSprite);
   }
 
   /* ---------------- Raycasting for Face Clicking ---------------- */
@@ -283,12 +406,12 @@ class SolidLab {
           clickedFace = 'side';
         }
 
-        this.selectFace(clickedFace);
+        this.selectFace(clickedFace, true);
       }
     });
   }
 
-  selectFace(faceKey) {
+  selectFace(faceKey, animateMotion = true) {
     if (!faceKey) return;
     this.selectedFace = faceKey;
 
@@ -310,6 +433,11 @@ class SolidLab {
     this.applyFaceHighlights();
     const isSimilar = (Math.abs(this.scaleX - this.scaleY) < 0.01) && (Math.abs(this.scaleY - this.scaleZ) < 0.01);
     this.updateStatus(isSimilar);
+    this.updateDimensionLabels();
+
+    if (animateMotion) {
+      this.focusOnCorrespondingFaces(faceKey);
+    }
   }
 
   applyFaceHighlights() {
@@ -318,7 +446,6 @@ class SolidLab {
     const isSimilar = (Math.abs(this.scaleX - this.scaleY) < 0.01) && (Math.abs(this.scaleY - this.scaleZ) < 0.01);
     const transDefaultColor = isSimilar ? 0x4f46e5 : 0xef4444;
 
-    // Reset base materials to green
     for (let i = 0; i < 6; i++) {
       this.baseMaterials[i].color.setHex(0x10b981);
       this.baseMaterials[i].emissive.setHex(0x000000);
@@ -326,7 +453,6 @@ class SolidLab {
       this.transMaterials[i].emissive.setHex(0x000000);
     }
 
-    // Highlight target indices in glowing Amber (0xf59e0b)
     let targetIndices = [4, 5]; // Front and Back
     if (this.selectedFace === 'top') {
       targetIndices = [2, 3]; // Top and Bottom
@@ -398,12 +524,10 @@ class SolidLab {
 
     if (btnResetView) {
       btnResetView.addEventListener('click', () => {
-        this.camera.position.set(7.5, 6.5, 10.5);
-        if (this.controls) this.controls.target.set(0, 2, 0);
+        this.resetCameraView();
       });
     }
 
-    // Toggle 3D Dimensions Checkbox
     if (toggle3DDimensions) {
       toggle3DDimensions.addEventListener('change', (e) => {
         this.showDimensions = e.target.checked;
@@ -415,7 +539,7 @@ class SolidLab {
     document.querySelectorAll('.face-select-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
         e.preventDefault();
-        this.selectFace(chip.dataset.face);
+        this.selectFace(chip.dataset.face, true);
       });
     });
   }
@@ -501,21 +625,29 @@ class SolidLab {
 
       faceDetailBox.innerHTML = `
         <div style="background: #ffffff; border: 2px solid ${isFaceSimilar ? '#10b981' : '#f59e0b'}; border-radius: var(--radius-md); padding: 1rem; margin-top: 0.85rem; box-shadow: var(--shadow-sm);">
+          
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <b style="color: #b45309; font-size: 0.92rem;">🔍 선택된 대응면: ${faceName}</b>
+            <b style="color: #b45309; font-size: 0.95rem;">🎯 클로즈업 관찰: ${faceName}</b>
             <span style="font-size: 0.78rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; ${isFaceSimilar ? 'background: #ecfdf5; color: #059669;' : 'background: #fef2f2; color: #dc2626;'}">
-              ${isFaceSimilar ? '✓ 대응면 닮음' : '✗ 대응면 왜곡 (비닮음)'}
+              ${isFaceSimilar ? '✓ 대응면 닮음' : '✗ 대응면 왜곡'}
             </span>
+          </div>
+
+          <!-- Highlighted Similarity Ratio for the Face -->
+          <div style="font-size: 1.05rem; font-weight: 800; text-align: center; padding: 0.55rem; background: ${isFaceSimilar ? '#ecfdf5' : '#fef2f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'}; border-radius: 8px; margin: 0.5rem 0;">
+            ${isFaceSimilar 
+              ? `✨ [${faceName}] 닮음비 = 1 : ${rW.toFixed(1)}` 
+              : `⚠ [${faceName}] 비율 불일치 (닮음비 없음)`}
           </div>
 
           <div class="data-row"><span>기준 직사각형:</span> <b>${baseW.toFixed(1)} × ${baseH.toFixed(1)} (가로:세로 비 1 : ${(baseH/baseW).toFixed(2)})</b></div>
           <div class="data-row"><span>확대 직사각형:</span> <b>${transW.toFixed(1)} × ${transH.toFixed(1)} (가로:세로 비 1 : ${(transH/transW).toFixed(2)})</b></div>
-          <div class="data-row"><span>가로 배율 / 세로 배율:</span> <b>${rW.toFixed(1)}배 / ${rH.toFixed(1)}배</b></div>
+          <div class="data-row"><span>대응변의 비:</span> <b>가로 1 : ${rW.toFixed(1)} / 세로 1 : ${rH.toFixed(1)}</b></div>
           
           <div style="margin-top: 0.6rem; font-size: 0.84rem; line-height: 1.45; padding: 0.5rem 0.65rem; border-radius: 6px; background: ${isFaceSimilar ? '#f0fdf4' : '#fff1f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'};">
             ${isFaceSimilar 
-              ? `<b>대응면 성질 발견:</b> 두 직사각형의 가로와 세로가 모두 <b>${rW.toFixed(1)}배</b>로 늘어나 대응면끼리 닮음입니다! 이처럼 <b>모든 대응면이 닮음이어야 입체도형의 닮음이 성립</b>합니다.` 
-              : `<b>대응면 성질 발견:</b> 가로 배율(${rW.toFixed(1)}배)과 세로 배율(${rH.toFixed(1)}배)이 서로 달라 <b>직사각형 모양이 찌그러졌습니다!</b> 대응면이 닮음이 아니므로 <b>전체 입체도형도 닮음이 될 수 없습니다.</b>`}
+              ? `<b>대응면 성질 증명:</b> 두 직사각형의 가로와 세로가 모두 <b>1 : ${rW.toFixed(1)}</b>로 늘어나 대응면끼리 닮음입니다! 이처럼 <b>모든 대응면이 닮음이어야 입체도형의 닮음이 성립</b>합니다.` 
+              : `<b>대응면 성질 증명:</b> 가로 배율(${rW.toFixed(1)}배)과 세로 배율(${rH.toFixed(1)}배)이 달라 <b>직사각형 모양이 일그러졌습니다!</b> 대응면이 닮음이 아니므로 <b>입체도형도 닮음이 아닙니다.</b>`}
           </div>
         </div>
       `;
@@ -535,7 +667,28 @@ class SolidLab {
 
   animate() {
     requestAnimationFrame(() => this.animate());
-    if (this.controls) this.controls.update();
+
+    // Smooth camera focus animation loop
+    if (this.isAnimating) {
+      const elapsed = performance.now() - this.animStartTime;
+      const t = Math.min(1.0, elapsed / this.animDuration);
+      // easeInOutCubic curve
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      this.camera.position.lerpVectors(this.startCamPos, this.targetCamPos, ease);
+      this.currentLookAt.lerpVectors(this.startLookAt, this.targetLookAt, ease);
+      if (this.controls) {
+        this.controls.target.copy(this.currentLookAt);
+      }
+      this.camera.lookAt(this.currentLookAt);
+
+      if (t >= 1.0) {
+        this.isAnimating = false;
+      }
+    } else if (this.controls) {
+      this.controls.update();
+    }
+
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
     }
