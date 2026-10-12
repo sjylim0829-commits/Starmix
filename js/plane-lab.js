@@ -1631,39 +1631,28 @@ class PlaneLab {
     const btnCheck = document.getElementById('btnCheckPlaneQuiz');
     const btnClear = document.getElementById('btnClearPlaneQuiz');
     const feedback = document.getElementById('planeQuizFeedback');
-    const chips = document.querySelectorAll('.chip-plane-word');
 
     if (!b1 || !b2 || !b3 || !btnCheck) return;
 
-    let activeBlank = b1;
-
-    [b1, b2, b3].forEach(blank => {
-      blank.addEventListener('focus', () => {
-        activeBlank = blank;
-      });
-      blank.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') checkAnswers();
-      });
+    // Direct Typing & Keyboard Navigation (Enter moves to next blank or submits)
+    b1.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (!b1.value.trim()) return;
+        b2.focus();
+      }
     });
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const word = chip.dataset.word;
-        if (!word) return;
-        let target = activeBlank;
-        if (target.value.trim() !== '') {
-          const empty = [b1, b2, b3].find(b => b.value.trim() === '');
-          if (empty) target = empty;
-        }
-        target.value = word;
-        const nextEmpty = [b1, b2, b3].find(b => b.value.trim() === '');
-        if (nextEmpty) {
-          activeBlank = nextEmpty;
-          nextEmpty.focus();
-        } else {
-          target.focus();
-        }
-      });
+    b2.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (!b2.value.trim()) return;
+        b3.focus();
+      }
+    });
+
+    b3.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        checkAnswers();
+      }
     });
 
     const checkAnswers = () => {
@@ -1674,15 +1663,20 @@ class PlaneLab {
       if (!v1 && !v2 && !v3) {
         if (feedback) {
           feedback.className = 'feedback-alert error';
-          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 먼저 입력하거나 아래 [보기 낱말]을 클릭해보세요!';
+          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 직접 타이핑하여 입력해주세요!';
           feedback.style.display = 'block';
         }
+        b1.focus();
         return;
       }
 
-      const c1 = (v1 === '대응변');
-      const c2 = (v2 === '비');
-      const c3 = (v3 === '대응각');
+      // Check correctness:
+      // Blank 1: '대응변' (or '대응하는변')
+      // Blank 2: '비' (or '비율')
+      // Blank 3: '대응각' (or '대응하는각')
+      const c1 = (v1 === '대응변' || v1 === '대응하는변');
+      const c2 = (v2 === '비' || v2 === '비율');
+      const c3 = (v3 === '대응각' || v3 === '대응하는각');
 
       const styleInput = (el, isCorrect) => {
         if (isCorrect) {
@@ -1715,13 +1709,13 @@ class PlaneLab {
         feedback.style.display = 'block';
       } else {
         let hints = [];
-        if (!c1) hints.push('• <b>1번 첫 번째 빈칸</b>: 마주보는 변의 쌍을 뜻하는 단어를 넣어보세요. (힌트: <b>대응변</b>)');
-        if (!c2) hints.push('• <b>1번 두 번째 빈칸</b>: 길이의 비율 관계를 뜻하는 한 글자 낱말입니다. (힌트: <b>비</b>)');
-        if (!c3) hints.push('• <b>2번 빈칸</b>: 크기가 변하지 않고 서로 같은 각의 쌍입니다. (힌트: <b>대응각</b>)');
+        if (!c1) hints.push('• <b>1번 첫 번째 빈칸</b>: 마주보는 변의 쌍을 뜻하는 수학 용어입니다. (예: <b>대응변</b>)');
+        if (!c2) hints.push('• <b>1번 두 번째 빈칸</b>: 길이의 비율 관계를 뜻하는 한 글자 낱말입니다. (예: <b>비</b>)');
+        if (!c3) hints.push('• <b>2번 빈칸</b>: 크기가 변하지 않고 서로 같은 각의 쌍입니다. (예: <b>대응각</b>)');
 
         feedback.className = 'feedback-alert error';
         feedback.innerHTML = `
-          ❌ <b>틀린 빈칸이 있습니다! 아래 힌트를 확인해보세요.</b><br>
+          ❌ <b>틀린 빈칸이 있습니다! 다시 입력해보세요.</b><br>
           ${hints.join('<br>')}
         `;
         feedback.style.display = 'block';
@@ -1739,7 +1733,6 @@ class PlaneLab {
           b.style.color = 'var(--primary)';
         });
         if (feedback) feedback.style.display = 'none';
-        activeBlank = b1;
         b1.focus();
       });
     }

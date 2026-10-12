@@ -1680,39 +1680,21 @@ class SolidLab {
     const btnCheck = document.getElementById('btnCheckSolidQuiz');
     const btnClear = document.getElementById('btnClearSolidQuiz');
     const feedback = document.getElementById('solidQuizFeedback');
-    const chips = document.querySelectorAll('.chip-solid-word');
 
     if (!b1 || !b2 || !btnCheck) return;
 
-    let activeBlank = b1;
-
-    [b1, b2].forEach(blank => {
-      blank.addEventListener('focus', () => {
-        activeBlank = blank;
-      });
-      blank.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') checkAnswers();
-      });
+    // Direct Typing & Keyboard Navigation (Enter moves to next blank or submits)
+    b1.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (!b1.value.trim()) return;
+        b2.focus();
+      }
     });
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const word = chip.dataset.word;
-        if (!word) return;
-        let target = activeBlank;
-        if (target.value.trim() !== '') {
-          const empty = [b1, b2].find(b => b.value.trim() === '');
-          if (empty) target = empty;
-        }
-        target.value = word;
-        const nextEmpty = [b1, b2].find(b => b.value.trim() === '');
-        if (nextEmpty) {
-          activeBlank = nextEmpty;
-          nextEmpty.focus();
-        } else {
-          target.focus();
-        }
-      });
+    b2.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        checkAnswers();
+      }
     });
 
     const checkAnswers = () => {
@@ -1722,9 +1704,10 @@ class SolidLab {
       if (!v1 && !v2) {
         if (feedback) {
           feedback.className = 'feedback-alert error';
-          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 먼저 입력하거나 아래 [보기 낱말]을 클릭해보세요!';
+          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 직접 타이핑하여 입력해주세요!';
           feedback.style.display = 'block';
         }
+        b1.focus();
         return;
       }
 
@@ -1761,12 +1744,12 @@ class SolidLab {
         feedback.style.display = 'block';
       } else {
         let hints = [];
-        if (!c1) hints.push('• <b>1번 빈칸</b>: 입체도형의 선분(모서리)의 길이의 비가 일정해야 합니다. (힌트: <b>모서리</b>)');
-        if (!c2) hints.push('• <b>2번 빈칸</b>: 2D 평면 분리에서 관찰했던 입체의 구성 요소입니다. (힌트: <b>면</b>)');
+        if (!c1) hints.push('• <b>1번 빈칸</b>: 입체도형의 선분(모서리)의 길이의 비가 일정해야 합니다. (예: <b>모서리</b>)');
+        if (!c2) hints.push('• <b>2번 빈칸</b>: 2D 평면 분리에서 관찰했던 입체의 구성 요소입니다. (예: <b>면</b>)');
 
         feedback.className = 'feedback-alert error';
         feedback.innerHTML = `
-          ❌ <b>틀린 빈칸이 있습니다! 아래 힌트를 확인해보세요.</b><br>
+          ❌ <b>틀린 빈칸이 있습니다! 다시 입력해보세요.</b><br>
           ${hints.join('<br>')}
         `;
         feedback.style.display = 'block';
@@ -1784,7 +1767,6 @@ class SolidLab {
           b.style.color = 'var(--primary)';
         });
         if (feedback) feedback.style.display = 'none';
-        activeBlank = b1;
         b1.focus();
       });
     }
