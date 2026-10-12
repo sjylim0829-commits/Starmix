@@ -151,10 +151,16 @@ class MissionsLab {
     const width = parent.clientWidth || 360;
     const height = parent.clientHeight || 280;
 
-    this.m1Canvas.width = width * dpr;
-    this.m1Canvas.height = height * dpr;
+    this.m1Canvas.width = Math.round(width * dpr);
+    this.m1Canvas.height = Math.round(height * dpr);
     this.m1Canvas.style.width = `${width}px`;
     this.m1Canvas.style.height = `${height}px`;
+
+    this.m1LogicalWidth = width;
+    this.m1LogicalHeight = height;
+
+    this.m1GridSize = Math.max(18, Math.min(26, Math.floor((height - 55) / 11)));
+    this.m1Origin = { x: 45, y: Math.round(height - 35) };
 
     this.m1Ctx.resetTransform();
     this.m1Ctx.scale(dpr, dpr);
@@ -164,16 +170,34 @@ class MissionsLab {
     if (this.m1EventsBound) return;
     this.m1EventsBound = true;
 
-    // Mouse move & click
-    this.m1Canvas.addEventListener('click', (e) => {
+    const getM1Coords = (e) => {
+      const rect = this.m1Canvas.getBoundingClientRect();
+      const logicalW = this.m1LogicalWidth || this.m1Canvas.clientWidth || rect.width;
+      const logicalH = this.m1LogicalHeight || this.m1Canvas.clientHeight || rect.height;
+      const scaleX = logicalW / rect.width;
+      const scaleY = logicalH / rect.height;
+
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+      }
+
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    };
+
+    const handleM1Click = (coords) => {
       if (this.m1Completed) return;
 
-      const rect = this.m1Canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      const gridX = Math.round((mouseX - this.m1Origin.x) / this.m1GridSize);
-      const gridY = Math.round((this.m1Origin.y - mouseY) / this.m1GridSize);
+      const gridX = Math.round((coords.x - this.m1Origin.x) / this.m1GridSize);
+      const gridY = Math.round((this.m1Origin.y - coords.y) / this.m1GridSize);
 
       this.m1ClickedPt = { x: gridX, y: gridY };
 
@@ -203,7 +227,17 @@ class MissionsLab {
       }
 
       this.renderMission1();
+    };
+
+    // Mouse & Touch
+    this.m1Canvas.addEventListener('click', (e) => {
+      handleM1Click(getM1Coords(e));
     });
+
+    this.m1Canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      handleM1Click(getM1Coords(e));
+    }, { passive: false });
 
     const resetBtn = document.getElementById('btnResetMission1');
     if (resetBtn) {
@@ -226,25 +260,77 @@ class MissionsLab {
   }
 
   renderMission1() {
-    const w = this.m1Canvas.clientWidth;
-    const h = this.m1Canvas.clientHeight;
+    const w = this.m1LogicalWidth || this.m1Canvas.clientWidth;
+    const h = this.m1LogicalHeight || this.m1Canvas.clientHeight;
     this.m1Ctx.clearRect(0, 0, w, h);
 
-    // Draw grid
+    // Draw grid anchored strictly to m1Origin
     this.m1Ctx.strokeStyle = '#f1f5f9';
     this.m1Ctx.lineWidth = 1;
-    for (let x = 0; x < w; x += this.m1GridSize) {
+
+    // Vertical lines from m1Origin.x
+    for (let x = this.m1Origin.x; x <= w; x += this.m1GridSize) {
       this.m1Ctx.beginPath();
       this.m1Ctx.moveTo(x, 0);
       this.m1Ctx.lineTo(x, h);
       this.m1Ctx.stroke();
     }
-    for (let y = 0; y < h; y += this.m1GridSize) {
+    for (let x = this.m1Origin.x - this.m1GridSize; x >= 0; x -= this.m1GridSize) {
+      this.m1Ctx.beginPath();
+      this.m1Ctx.moveTo(x, 0);
+      this.m1Ctx.lineTo(x, h);
+      this.m1Ctx.stroke();
+    }
+
+    // Horizontal lines from m1Origin.y
+    for (let y = this.m1Origin.y; y >= 0; y -= this.m1GridSize) {
       this.m1Ctx.beginPath();
       this.m1Ctx.moveTo(0, y);
       this.m1Ctx.lineTo(w, y);
       this.m1Ctx.stroke();
     }
+    for (let y = this.m1Origin.y + this.m1GridSize; y <= h; y += this.m1GridSize) {
+      this.m1Ctx.beginPath();
+      this.m1Ctx.moveTo(0, y);
+      this.m1Ctx.lineTo(w, y);
+      this.m1Ctx.stroke();
+    }
+
+    // Axes
+    this.m1Ctx.strokeStyle = '#cbd5e1';
+    this.m1Ctx.lineWidth = 2;
+    this.m1Ctx.beginPath();
+    this.m1Ctx.moveTo(0, this.m1Origin.y);
+    this.m1Ctx.lineTo(w, this.m1Origin.y);
+    this.m1Ctx.stroke();
+
+    this.m1Ctx.beginPath();
+    this.m1Ctx.moveTo(this.m1Origin.x, 0);
+    this.m1Ctx.lineTo(this.m1Origin.x, h);
+    this.m1Ctx.stroke();
+
+    // Axis coordinate numbers
+    this.m1Ctx.font = 'bold 10px Pretendard, sans-serif';
+    this.m1Ctx.fillStyle = '#94a3b8';
+    this.m1Ctx.textAlign = 'center';
+    this.m1Ctx.textBaseline = 'middle';
+
+    for (let i = 1; i <= 20; i++) {
+      const ptX = this.m1ToScreen({ x: i, y: 0 });
+      if (ptX.x < w - 10) {
+        this.m1Ctx.fillText(i, ptX.x, ptX.y + 14);
+      }
+    }
+
+    this.m1Ctx.textAlign = 'right';
+    for (let i = 1; i <= 15; i++) {
+      const ptY = this.m1ToScreen({ x: 0, y: i });
+      if (ptY.y > 10) {
+        this.m1Ctx.fillText(i, ptY.x - 6, ptY.y);
+      }
+    }
+
+    this.m1Ctx.fillText('0', this.m1Origin.x - 6, this.m1Origin.y + 14);
 
     // Base Triangle ABC: A(1, 1), B(4, 1), C(1, 5)
     const polyABC = [

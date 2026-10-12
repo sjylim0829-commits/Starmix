@@ -56,13 +56,16 @@ class PlaneLab {
     const width = parent.clientWidth || 800;
     const height = Math.max(260, parent.clientHeight || 420);
 
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
+    this.canvas.width = Math.round(width * dpr);
+    this.canvas.height = Math.round(height * dpr);
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
 
+    this.logicalWidth = width;
+    this.logicalHeight = height;
+
     this.gridSize = Math.max(24, Math.min(36, Math.floor((height - 70) / 11)));
-    this.origin = { x: 55, y: height - 38 };
+    this.origin = { x: 55, y: Math.round(height - 38) };
 
     this.ctx.resetTransform();
     this.ctx.scale(dpr, dpr);
@@ -222,32 +225,42 @@ class PlaneLab {
   }
 
   setupMouseEvents() {
-    this.canvas.addEventListener('mousemove', (e) => {
+    const getCanvasCoords = (e) => {
       const rect = this.canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+      const logicalW = this.logicalWidth || this.canvas.clientWidth || rect.width;
+      const logicalH = this.logicalHeight || this.canvas.clientHeight || rect.height;
+      const scaleX = logicalW / rect.width;
+      const scaleY = logicalH / rect.height;
 
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else if (e.changedTouches && e.changedTouches.length > 0) {
+        clientX = e.changedTouches[0].clientX;
+        clientY = e.changedTouches[0].clientY;
+      }
+
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    };
+
+    const updateHoverCoord = (pos) => {
       // Snap to closest grid coordinate
-      const gridX = Math.round((mouseX - this.origin.x) / this.gridSize);
-      const gridY = Math.round((this.origin.y - mouseY) / this.gridSize);
+      const gridX = Math.round((pos.x - this.origin.x) / this.gridSize);
+      const gridY = Math.round((this.origin.y - pos.y) / this.gridSize);
 
       if (gridX >= 0 && gridY >= 0 && gridX <= 25 && gridY <= 15) {
         this.hoverGridPt = { x: gridX, y: gridY };
       } else {
         this.hoverGridPt = null;
       }
+    };
 
-      if (this.currentTabMode === 'draw') {
-        this.render();
-      }
-    });
-
-    this.canvas.addEventListener('mouseleave', () => {
-      this.hoverGridPt = null;
-      if (this.currentTabMode === 'draw') this.render();
-    });
-
-    this.canvas.addEventListener('click', () => {
+    const addPointAtHover = () => {
       if (this.currentTabMode !== 'draw' || !this.hoverGridPt) return;
 
       if (this.drawnPoints.length < 3) {
@@ -269,6 +282,49 @@ class PlaneLab {
         }
         this.render();
       }
+    };
+
+    // 1. Mouse Events
+    this.canvas.addEventListener('mousemove', (e) => {
+      updateHoverCoord(getCanvasCoords(e));
+      if (this.currentTabMode === 'draw') {
+        this.render();
+      }
+    });
+
+    this.canvas.addEventListener('mouseleave', () => {
+      this.hoverGridPt = null;
+      if (this.currentTabMode === 'draw') this.render();
+    });
+
+    this.canvas.addEventListener('click', (e) => {
+      updateHoverCoord(getCanvasCoords(e));
+      addPointAtHover();
+    });
+
+    // 2. Touch Events for Tablets (iPad, Galaxy Tab)
+    this.canvas.addEventListener('touchstart', (e) => {
+      if (this.currentTabMode !== 'draw') return;
+      if (e.touches && e.touches.length > 0) {
+        e.preventDefault();
+        updateHoverCoord(getCanvasCoords(e));
+        this.render();
+      }
+    }, { passive: false });
+
+    this.canvas.addEventListener('touchmove', (e) => {
+      if (this.currentTabMode !== 'draw') return;
+      if (e.touches && e.touches.length > 0) {
+        e.preventDefault();
+        updateHoverCoord(getCanvasCoords(e));
+        this.render();
+      }
+    }, { passive: false });
+
+    this.canvas.addEventListener('touchend', (e) => {
+      if (this.currentTabMode !== 'draw') return;
+      e.preventDefault();
+      addPointAtHover();
     });
   }
 
@@ -339,21 +395,38 @@ class PlaneLab {
   }
 
   drawGrid() {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = this.logicalWidth || this.canvas.clientWidth;
+    const h = this.logicalHeight || this.canvas.clientHeight;
 
     this.ctx.strokeStyle = '#f1f5f9';
     this.ctx.lineWidth = 1;
 
-    // Grid lines
-    for (let x = 0; x < w; x += this.gridSize) {
+    // Vertical grid lines: anchored to this.origin.x
+    // Positive direction (right)
+    for (let x = this.origin.x; x <= w; x += this.gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, 0);
+      this.ctx.lineTo(x, h);
+      this.ctx.stroke();
+    }
+    // Negative direction (left)
+    for (let x = this.origin.x - this.gridSize; x >= 0; x -= this.gridSize) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
       this.ctx.lineTo(x, h);
       this.ctx.stroke();
     }
 
-    for (let y = 0; y < h; y += this.gridSize) {
+    // Horizontal grid lines: anchored to this.origin.y
+    // Positive direction (upwards)
+    for (let y = this.origin.y; y >= 0; y -= this.gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, y);
+      this.ctx.lineTo(w, y);
+      this.ctx.stroke();
+    }
+    // Negative direction (downwards)
+    for (let y = this.origin.y + this.gridSize; y <= h; y += this.gridSize) {
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
       this.ctx.lineTo(w, y);
@@ -363,26 +436,43 @@ class PlaneLab {
     // Bold Axis Lines
     this.ctx.strokeStyle = '#cbd5e1';
     this.ctx.lineWidth = 2;
+    // X-axis (y = origin.y)
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.origin.y);
     this.ctx.lineTo(w, this.origin.y);
     this.ctx.stroke();
 
+    // Y-axis (x = origin.x)
     this.ctx.beginPath();
     this.ctx.moveTo(this.origin.x, 0);
     this.ctx.lineTo(this.origin.x, h);
     this.ctx.stroke();
 
     // Axis coordinate numbers
-    this.ctx.font = '11px sans-serif';
+    this.ctx.font = 'bold 11px Pretendard, sans-serif';
     this.ctx.fillStyle = '#94a3b8';
-    for (let i = 1; i <= 20; i++) {
-      const ptX = this.toScreen({ x: i, y: 0 });
-      if (ptX.x < w) this.ctx.fillText(i, ptX.x - 3, ptX.y + 15);
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
 
-      const ptY = this.toScreen({ x: 0, y: i });
-      if (ptY.y > 0) this.ctx.fillText(i, ptY.x - 18, ptY.y + 4);
+    // X-axis numbers
+    for (let i = 1; i <= 25; i++) {
+      const ptX = this.toScreen({ x: i, y: 0 });
+      if (ptX.x < w - 10) {
+        this.ctx.fillText(i, ptX.x, ptX.y + 15);
+      }
     }
+
+    // Y-axis numbers
+    this.ctx.textAlign = 'right';
+    for (let i = 1; i <= 15; i++) {
+      const ptY = this.toScreen({ x: 0, y: i });
+      if (ptY.y > 10) {
+        this.ctx.fillText(i, ptY.x - 8, ptY.y);
+      }
+    }
+
+    // Origin "0" label
+    this.ctx.fillText('0', this.origin.x - 8, this.origin.y + 15);
   }
 
   renderPolygon(poly, color, fillColor, labelPrefix = '', angles = null) {

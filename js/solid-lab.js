@@ -1102,29 +1102,37 @@ class SolidLab {
 
     ctx.clearRect(0, 0, width, height);
 
-    // 1. Blueprint Grid Background
+    // 1. Blueprint Grid Background (anchored to ground baseline groundY and originX)
+    const groundY = height - 38;
+    const gridOriginX = 50;
+    const gridStep = 18;
+
     ctx.strokeStyle = '#e2e8f0';
     ctx.lineWidth = 1;
-    for (let x = 0; x <= width; x += 18) {
+
+    for (let x = gridOriginX; x <= width; x += gridStep) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
     }
-    for (let y = 0; y <= height; y += 18) {
+    for (let x = gridOriginX - gridStep; x >= 0; x -= gridStep) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    for (let y = groundY; y >= 0; y -= gridStep) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
     }
-
-    // Major grid lines
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1.2;
-    for (let x = 0; x <= width; x += 90) {
+    for (let y = groundY + gridStep; y <= height; y += gridStep) {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
       ctx.stroke();
     }
 
