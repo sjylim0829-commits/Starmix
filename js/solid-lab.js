@@ -1,8 +1,9 @@
 /**
- * Starmix Similarity Lab - Solid Geometry Module (v2.4)
+ * Starmix Similarity Lab - Solid Geometry Module (v2.5)
  * - Multi-Material Face Highlighting
  * - Real-Time 3D Edge Dimension Labels (Sprites)
- * - Smooth Camera Focus Animation & Close-Up on Selected Corresponding Faces
+ * - Smooth Camera Focus Animation & Close-Up
+ * - Detached Face Pop-Out & Exploded Comparison (대응면 분리 추출 및 평면 1:1 비교)
  * - Direct 3D & 2D Corresponding Face Similarity Ratio (대응면 닮음비) Visualizer
  */
 
@@ -25,26 +26,33 @@ class SolidLab {
     this.transMaterials = [];
     this.gridHelper = null;
     this.labelsGroup = null;
-    this.faceRatioSprite = null;
+    this.detachedGroup = null; // Group for pop-out detached comparison faces
 
     // Scale State
     this.scaleX = 1.5; // Width (가로 2)
     this.scaleZ = 1.5; // Depth (세로 3)
     this.scaleY = 1.5; // Height (높이 4)
 
-    // Face selection: 'front' (+Z/idx 4), 'top' (+Y/idx 2), 'side' (+X/idx 0)
+    // Face selection: 'front' (+Z), 'top' (+Y), 'side' (+X)
     this.selectedFace = 'front';
     this.showDimensions = true;
 
     // Smooth Camera Animation State
     this.isAnimating = false;
     this.animStartTime = 0;
-    this.animDuration = 800; // ms
+    this.animDuration = 850;
     this.startCamPos = new THREE.Vector3();
     this.targetCamPos = new THREE.Vector3();
     this.startLookAt = new THREE.Vector3();
     this.targetLookAt = new THREE.Vector3();
     this.currentLookAt = new THREE.Vector3(0, 2.0, 0);
+
+    // Detached Face Pop-Out Animation State
+    this.isDetaching = false;
+    this.detachProgress = 0.0; // 0.0 (docked in solid) -> 1.0 (popped out forward)
+    this.targetDetachProgress = 0.0;
+    this.detachStartTime = 0;
+    this.startDetachVal = 0.0;
 
     this.init();
   }
@@ -54,7 +62,7 @@ class SolidLab {
     this.createMeshes();
     this.setupControls();
     this.setupRaycasting();
-    this.selectFace('front', false); // Initial selection without jump
+    this.selectFace('front', false); // Initial selection without camera jump
     this.updateDimensionLabels();
     this.animate();
 
@@ -81,7 +89,7 @@ class SolidLab {
     this.renderer.shadowMap.enabled = true;
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.82);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
     this.scene.add(ambientLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
@@ -97,6 +105,10 @@ class SolidLab {
     // Labels & Banners Group
     this.labelsGroup = new THREE.Group();
     this.scene.add(this.labelsGroup);
+
+    // Detached Comparison Faces Group
+    this.detachedGroup = new THREE.Group();
+    this.scene.add(this.detachedGroup);
 
     // OrbitControls
     if (THREE.OrbitControls) {
@@ -125,7 +137,9 @@ class SolidLab {
       this.baseMaterials.push(new THREE.MeshStandardMaterial({
         color: 0x10b981,
         roughness: 0.3,
-        metalness: 0.1
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.85
       }));
     }
 
@@ -159,7 +173,9 @@ class SolidLab {
       this.transMaterials.push(new THREE.MeshStandardMaterial({
         color: color,
         roughness: 0.3,
-        metalness: 0.1
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.85
       }));
     }
 
@@ -180,6 +196,7 @@ class SolidLab {
     this.applyFaceHighlights();
     this.updateStatus(isSimilar);
     this.updateDimensionLabels();
+    this.rebuildDetachedFaces();
   }
 
   /* ---------------- Camera Focus & Close-Up Animation ---------------- */
@@ -200,31 +217,266 @@ class SolidLab {
     const curD = 3.0 * this.scaleZ;
     const midY = (2.0 + curH / 2) / 2;
 
+    // Trigger Detached Face Pop-Out Animation (0.0 -> 1.0)
+    this.startDetachAnimation(1.0);
+
     if (faceKey === 'front') {
-      // Direct front-facing close-up side-by-side
       const maxZ = Math.max(1.5, curD / 2);
-      const camPos = new THREE.Vector3(0, midY, maxZ + 7.2);
-      const lookAt = new THREE.Vector3(0, midY, (1.5 + curD / 2) / 2);
+      const camPos = new THREE.Vector3(0, midY, maxZ + 9.5);
+      const lookAt = new THREE.Vector3(0, midY, maxZ + 2.5);
       this.animateCameraTo(camPos, lookAt, 850);
     } else if (faceKey === 'top') {
-      // Top-down bird's eye close-up on the two top rectangles
       const topY = Math.max(4.0, curH);
-      const camPos = new THREE.Vector3(0, topY + 7.8, 3.2);
-      const lookAt = new THREE.Vector3(0, topY - 0.5, 0);
+      const camPos = new THREE.Vector3(0, topY + 9.5, 3.2);
+      const lookAt = new THREE.Vector3(0, topY + 2.2, 0);
       this.animateCameraTo(camPos, lookAt, 850);
     } else if (faceKey === 'side') {
-      // Angled side close-up focusing on the side rectangles
-      const rightX = 3.5 + curW / 2;
-      const camPos = new THREE.Vector3(rightX + 5.2, midY + 1.2, 3.8);
-      const lookAt = new THREE.Vector3(0.5, midY, 0);
+      const maxZ = Math.max(1.5, curD / 2);
+      const camPos = new THREE.Vector3(0, midY, maxZ + 9.8);
+      const lookAt = new THREE.Vector3(0, midY, maxZ + 2.6);
       this.animateCameraTo(camPos, lookAt, 850);
     }
   }
 
   resetCameraView() {
+    // Dock detached faces back into solid bodies (1.0 -> 0.0)
+    this.startDetachAnimation(0.0);
+
     const camPos = new THREE.Vector3(7.5, 6.5, 10.5);
     const lookAt = new THREE.Vector3(0, 2.0, 0);
     this.animateCameraTo(camPos, lookAt, 800);
+  }
+
+  startDetachAnimation(targetVal) {
+    this.isDetaching = true;
+    this.startDetachVal = this.detachProgress;
+    this.targetDetachProgress = targetVal;
+    this.detachStartTime = performance.now();
+  }
+
+  /* ---------------- Detached Face Geometry & Exploded View ---------------- */
+  rebuildDetachedFaces() {
+    if (!this.detachedGroup) return;
+
+    // Clear previous detached meshes
+    while (this.detachedGroup.children.length > 0) {
+      const obj = this.detachedGroup.children[0];
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+        else obj.material.dispose();
+      }
+      this.detachedGroup.remove(obj);
+    }
+
+    if (this.detachProgress <= 0.01) return;
+
+    const curW = 2.0 * this.scaleX;
+    const curH = 4.0 * this.scaleY;
+    const curD = 3.0 * this.scaleZ;
+    const p = this.detachProgress;
+
+    // Determine face dimensions and similarity for selected face
+    let baseFaceW = 2.0, baseFaceH = 4.0;
+    let transFaceW = curW, transFaceH = curH;
+    let r1 = this.scaleX, r2 = this.scaleY;
+
+    let baseDockedPos = new THREE.Vector3(-3.5, 2.0, 1.51);
+    let transDockedPos = new THREE.Vector3(3.5, curH / 2, curD / 2 + 0.01);
+    let baseDockedRot = new THREE.Euler(0, 0, 0);
+    let transDockedRot = new THREE.Euler(0, 0, 0);
+
+    let baseCurPos = baseDockedPos.clone();
+    let transCurPos = transDockedPos.clone();
+    let baseCurRot = baseDockedRot.clone();
+    let transCurRot = transDockedRot.clone();
+
+    if (this.selectedFace === 'front') {
+      baseFaceW = 2.0; baseFaceH = 4.0;
+      transFaceW = curW; transFaceH = curH;
+      r1 = this.scaleX; r2 = this.scaleY;
+
+      baseDockedPos.set(-3.5, 2.0, 1.51);
+      transDockedPos.set(3.5, curH / 2, curD / 2 + 0.01);
+      baseDockedRot.set(0, 0, 0);
+      transDockedRot.set(0, 0, 0);
+
+      // Slide forward along +Z towards viewer
+      const maxZ = Math.max(1.5, curD / 2);
+      baseCurPos.set(-3.5, 2.0, 1.51 + 3.2 * p);
+      transCurPos.set(3.5, curH / 2, curD / 2 + 0.01 + 3.2 * p);
+      baseCurRot.set(0, 0, 0);
+      transCurRot.set(0, 0, 0);
+
+    } else if (this.selectedFace === 'top') {
+      baseFaceW = 2.0; baseFaceH = 3.0; // Width X=2, Depth Z=3
+      transFaceW = curW; transFaceH = curD;
+      r1 = this.scaleX; r2 = this.scaleZ;
+
+      baseDockedPos.set(-3.5, 4.01, 0);
+      transDockedPos.set(3.5, curH + 0.01, 0);
+      baseDockedRot.set(-Math.PI / 2, 0, 0);
+      transDockedRot.set(-Math.PI / 2, 0, 0);
+
+      // Slide upward along +Y
+      baseCurPos.set(-3.5, 4.01 + 3.2 * p, 0);
+      transCurPos.set(3.5, curH + 0.01 + 3.2 * p, 0);
+      baseCurRot.set(-Math.PI / 2, 0, 0);
+      transCurRot.set(-Math.PI / 2, 0, 0);
+
+    } else if (this.selectedFace === 'side') {
+      baseFaceW = 3.0; baseFaceH = 4.0; // Depth Z=3, Height Y=4
+      transFaceW = curD; transFaceH = curH;
+      r1 = this.scaleZ; r2 = this.scaleY;
+
+      baseDockedPos.set(-2.49, 2.0, 0);
+      transDockedPos.set(3.5 + curW / 2 + 0.01, curH / 2, 0);
+      baseDockedRot.set(0, Math.PI / 2, 0);
+      transDockedRot.set(0, Math.PI / 2, 0);
+
+      // Smoothly swing out from the right side towards the front (+Z) for direct 1:1 frontal comparison
+      const maxZ = Math.max(1.5, curD / 2);
+      const targetBaseZ = maxZ + 2.8;
+      const targetTransZ = maxZ + 2.8;
+
+      baseCurPos.set(
+        -2.49 + (-3.2 - (-2.49)) * p,
+        2.0,
+        0 + targetBaseZ * p
+      );
+      transCurPos.set(
+        (3.5 + curW / 2 + 0.01) + (3.2 - (3.5 + curW / 2 + 0.01)) * p,
+        curH / 2,
+        0 + targetTransZ * p
+      );
+
+      // Smooth rotation from side (PI/2) to frontal (0)
+      const currentAngleY = (Math.PI / 2) * (1 - p);
+      baseCurRot.set(0, currentAngleY, 0);
+      transCurRot.set(0, currentAngleY, 0);
+    }
+
+    const isFaceSimilar = Math.abs(r1 - r2) < 0.01;
+
+    // Dim the parent cuboid bodies so detached faces shine in the foreground
+    const bodyOpacity = 0.85 - p * 0.58; // 0.85 -> 0.27
+    this.baseMaterials.forEach(m => m.opacity = bodyOpacity);
+    this.transMaterials.forEach(m => m.opacity = bodyOpacity);
+
+    // 1. Base Detached Face (Emerald Green Plane with Golden Glow)
+    const baseGeom = new THREE.PlaneGeometry(baseFaceW, baseFaceH);
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: 0x10b981,
+      emissive: 0xd97706,
+      emissiveIntensity: 0.35,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.94
+    });
+    const baseFaceMesh = new THREE.Mesh(baseGeom, baseMat);
+    baseFaceMesh.position.copy(baseCurPos);
+    baseFaceMesh.rotation.copy(baseCurRot);
+    baseFaceMesh.renderOrder = 900;
+
+    // Glowing border outline
+    const baseEdgeLines = new THREE.LineSegments(
+      new THREE.EdgesGeometry(baseGeom),
+      new THREE.LineBasicMaterial({ color: 0xf59e0b, linewidth: 3 })
+    );
+    baseFaceMesh.add(baseEdgeLines);
+    this.detachedGroup.add(baseFaceMesh);
+
+    // 2. Transformed Detached Face (Indigo if similar, Red if distorted)
+    const transGeom = new THREE.PlaneGeometry(transFaceW, transFaceH);
+    const transColor = isFaceSimilar ? 0x4f46e5 : 0xef4444;
+    const transEmissive = isFaceSimilar ? 0xd97706 : 0xb91c1c;
+    const transMat = new THREE.MeshStandardMaterial({
+      color: transColor,
+      emissive: transEmissive,
+      emissiveIntensity: 0.35,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.94
+    });
+    const transFaceMesh = new THREE.Mesh(transGeom, transMat);
+    transFaceMesh.position.copy(transCurPos);
+    transFaceMesh.rotation.copy(transCurRot);
+    transFaceMesh.renderOrder = 900;
+
+    const transEdgeLines = new THREE.LineSegments(
+      new THREE.EdgesGeometry(transGeom),
+      new THREE.LineBasicMaterial({ color: isFaceSimilar ? 0xf59e0b : 0xf87171, linewidth: 3 })
+    );
+    transFaceMesh.add(transEdgeLines);
+    this.detachedGroup.add(transFaceMesh);
+
+    // 3. Four Corner Connector Guide Lines (Dotted projection from cuboid body to detached face)
+    if (p > 0.05) {
+      this.createCornerConnectorLines(baseDockedPos, baseCurPos, baseFaceW, baseFaceH, baseDockedRot, baseCurRot, 0x10b981);
+      this.createCornerConnectorLines(transDockedPos, transCurPos, transFaceW, transFaceH, transDockedRot, transCurRot, isFaceSimilar ? 0x4f46e5 : 0xef4444);
+    }
+
+    // 4. Detached Face Title Tags & Dimensions (Sprites)
+    if (p > 0.35) {
+      const faceKor = (this.selectedFace === 'front' ? '앞면' : (this.selectedFace === 'top' ? '윗면' : '옆면'));
+
+      let tagOffset = new THREE.Vector3(0, baseFaceH / 2 + 0.5, 0.15);
+      let transTagOffset = new THREE.Vector3(0, transFaceH / 2 + 0.5, 0.15);
+      let centerBannerOffset = new THREE.Vector3(0, Math.max(baseFaceH, transFaceH) / 2 + 1.15, 0.15);
+
+      if (this.selectedFace === 'top') {
+        tagOffset = new THREE.Vector3(0, 0.35, -baseFaceH / 2 - 0.55);
+        transTagOffset = new THREE.Vector3(0, 0.35, -transFaceH / 2 - 0.55);
+        centerBannerOffset = new THREE.Vector3(0, 0.45, -Math.max(baseFaceH, transFaceH) / 2 - 1.25);
+      }
+
+      const baseTag = this.createLabelSprite(`기준 ${faceKor} (${baseFaceW}×${baseFaceH})`, '#059669', '#ffffff', 1.8, 0.55);
+      baseTag.position.copy(baseCurPos).add(tagOffset);
+      this.detachedGroup.add(baseTag);
+
+      const transTag = this.createLabelSprite(`확대 ${faceKor} (${transFaceW.toFixed(1)}×${transFaceH.toFixed(1)})`, isFaceSimilar ? '#4f46e5' : '#dc2626', '#ffffff', 1.9, 0.55);
+      transTag.position.copy(transCurPos).add(transTagOffset);
+      this.detachedGroup.add(transTag);
+
+      // Central Exploded Comparison Banner
+      const midPoint = new THREE.Vector3().addVectors(baseCurPos, transCurPos).multiplyScalar(0.5);
+      const compareText = isFaceSimilar 
+        ? `✨ 대응면 닮음 ∽ (닮음비 1 : ${r1.toFixed(1)})` 
+        : `⚠ 대응면 비율 왜곡 (가로 1:${r1.toFixed(1)} ≠ 세로 1:${r2.toFixed(1)})`;
+      const compareColor = isFaceSimilar ? '#059669' : '#dc2626';
+
+      const centerCompareSprite = this.createBannerSprite(compareText, compareColor, '#ffffff', 4.2, 0.85);
+      centerCompareSprite.position.copy(midPoint).add(centerBannerOffset);
+      this.detachedGroup.add(centerCompareSprite);
+    }
+  }
+
+  createCornerConnectorLines(dockedPos, curPos, w, h, dockedRot, curRot, color = 0xf59e0b) {
+    const hw = w / 2;
+    const hh = h / 2;
+    const localCorners = [
+      new THREE.Vector3(-hw, -hh, 0),
+      new THREE.Vector3(hw, -hh, 0),
+      new THREE.Vector3(hw, hh, 0),
+      new THREE.Vector3(-hw, hh, 0)
+    ];
+
+    const points = [];
+    localCorners.forEach(c => {
+      const c1 = c.clone().applyEuler(dockedRot).add(dockedPos);
+      const c2 = c.clone().applyEuler(curRot).add(curPos);
+      points.push(c1);
+      points.push(c2);
+    });
+
+    const geom = new THREE.BufferGeometry().setFromPoints(points);
+    const mat = new THREE.LineBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.65
+    });
+    const lineSeg = new THREE.LineSegments(geom, mat);
+    this.detachedGroup.add(lineSeg);
   }
 
   /* ---------------- 3D Sprites (Dimensions & Similarity Ratio Banner) ---------------- */
@@ -234,7 +486,6 @@ class SolidLab {
     canvas.height = 96;
     const ctx = canvas.getContext('2d');
 
-    // Rounded rectangle badge
     ctx.fillStyle = bgColor;
     const x = 8, y = 8, w = 240, h = 80, r = 20;
     ctx.beginPath();
@@ -275,7 +526,6 @@ class SolidLab {
     canvas.height = 110;
     const ctx = canvas.getContext('2d');
 
-    // Glowing Banner Badge
     ctx.fillStyle = bgColor;
     const x = 8, y = 8, w = 496, h = 94, r = 24;
     ctx.beginPath();
@@ -295,7 +545,7 @@ class SolidLab {
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    ctx.font = 'bold 38px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
+    ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif';
     ctx.fillStyle = textColor;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -322,7 +572,7 @@ class SolidLab {
 
     if (!this.showDimensions) return;
 
-    // 1. Labels for Base Cuboid (가로 2, 세로 3, 높이 4)
+    // 1. Labels for Base Cuboid
     const baseWidthSprite = this.createLabelSprite('가로: 2', '#059669');
     baseWidthSprite.position.set(-3.5, 0.28, 1.95);
     this.labelsGroup.add(baseWidthSprite);
@@ -353,34 +603,6 @@ class SolidLab {
     const transHeightSprite = this.createLabelSprite(`높이: ${curH.toFixed(1)}`, badgeColor);
     transHeightSprite.position.set(3.5 - curW / 2 - 0.55, curH / 2, curD / 2);
     this.labelsGroup.add(transHeightSprite);
-
-    // 3. Central 3D Floating Ratio Banner for Focused Corresponding Faces
-    let faceKorName = '앞면';
-    let r1 = this.scaleX, r2 = this.scaleY;
-    if (this.selectedFace === 'top') {
-      faceKorName = '윗면';
-      r1 = this.scaleX; r2 = this.scaleZ;
-    } else if (this.selectedFace === 'side') {
-      faceKorName = '옆면';
-      r1 = this.scaleZ; r2 = this.scaleY;
-    }
-
-    const isFaceSimilar = Math.abs(r1 - r2) < 0.01;
-    let bannerText = '';
-    let bannerColor = '#d97706';
-
-    if (isFaceSimilar) {
-      bannerText = `🔍 [${faceKorName}] 대응면 닮음비 = 1 : ${r1.toFixed(1)}`;
-      bannerColor = '#059669'; // Green success
-    } else {
-      bannerText = `⚠ [${faceKorName}] 비율 불일치 (가로 1:${r1.toFixed(1)} ≠ 세로 1:${r2.toFixed(1)})`;
-      bannerColor = '#dc2626'; // Red warning
-    }
-
-    const bannerY = Math.max(4.5, curH + 0.8);
-    const bannerSprite = this.createBannerSprite(bannerText, bannerColor, '#ffffff');
-    bannerSprite.position.set(0, bannerY, (this.selectedFace === 'front' ? Math.max(1.5, curD/2) + 0.5 : 0));
-    this.labelsGroup.add(bannerSprite);
   }
 
   /* ---------------- Raycasting for Face Clicking ---------------- */
@@ -415,7 +637,6 @@ class SolidLab {
     if (!faceKey) return;
     this.selectedFace = faceKey;
 
-    // Update active button chip styles
     document.querySelectorAll('.face-select-chip').forEach(chip => {
       if (chip.dataset.face === faceKey) {
         chip.classList.add('active');
@@ -437,6 +658,8 @@ class SolidLab {
 
     if (animateMotion) {
       this.focusOnCorrespondingFaces(faceKey);
+    } else {
+      this.rebuildDetachedFaces();
     }
   }
 
@@ -627,7 +850,7 @@ class SolidLab {
         <div style="background: #ffffff; border: 2px solid ${isFaceSimilar ? '#10b981' : '#f59e0b'}; border-radius: var(--radius-md); padding: 1rem; margin-top: 0.85rem; box-shadow: var(--shadow-sm);">
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <b style="color: #b45309; font-size: 0.95rem;">🎯 클로즈업 관찰: ${faceName}</b>
+            <b style="color: #b45309; font-size: 0.95rem;">🎯 면 분리 비교: ${faceName}</b>
             <span style="font-size: 0.78rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; ${isFaceSimilar ? 'background: #ecfdf5; color: #059669;' : 'background: #fef2f2; color: #dc2626;'}">
               ${isFaceSimilar ? '✓ 대응면 닮음' : '✗ 대응면 왜곡'}
             </span>
@@ -646,8 +869,8 @@ class SolidLab {
           
           <div style="margin-top: 0.6rem; font-size: 0.84rem; line-height: 1.45; padding: 0.5rem 0.65rem; border-radius: 6px; background: ${isFaceSimilar ? '#f0fdf4' : '#fff1f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'};">
             ${isFaceSimilar 
-              ? `<b>대응면 성질 증명:</b> 두 직사각형의 가로와 세로가 모두 <b>1 : ${rW.toFixed(1)}</b>로 늘어나 대응면끼리 닮음입니다! 이처럼 <b>모든 대응면이 닮음이어야 입체도형의 닮음이 성립</b>합니다.` 
-              : `<b>대응면 성질 증명:</b> 가로 배율(${rW.toFixed(1)}배)과 세로 배율(${rH.toFixed(1)}배)이 달라 <b>직사각형 모양이 일그러졌습니다!</b> 대응면이 닮음이 아니므로 <b>입체도형도 닮음이 아닙니다.</b>`}
+              ? `<b>대응면 성질 증명:</b> 입체에서 분리된 두 직사각형의 가로와 세로가 모두 <b>1 : ${rW.toFixed(1)}</b>로 늘어나 대응면끼리 닮음입니다! 이처럼 <b>모든 대응면이 닮음이어야 입체도형의 닮음이 성립</b>합니다.` 
+              : `<b>대응면 성질 증명:</b> 분리된 직사각형의 가로 배율(${rW.toFixed(1)}배)과 세로 배율(${rH.toFixed(1)}배)이 달라 <b>직사각형 모양이 일그러졌습니다!</b> 대응면이 닮음이 아니므로 <b>입체도형도 닮음이 아닙니다.</b>`}
           </div>
         </div>
       `;
@@ -668,11 +891,10 @@ class SolidLab {
   animate() {
     requestAnimationFrame(() => this.animate());
 
-    // Smooth camera focus animation loop
+    // 1. Camera Animation Loop
     if (this.isAnimating) {
       const elapsed = performance.now() - this.animStartTime;
       const t = Math.min(1.0, elapsed / this.animDuration);
-      // easeInOutCubic curve
       const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       this.camera.position.lerpVectors(this.startCamPos, this.targetCamPos, ease);
@@ -687,6 +909,22 @@ class SolidLab {
       }
     } else if (this.controls) {
       this.controls.update();
+    }
+
+    // 2. Detached Face Animation Loop
+    if (this.isDetaching) {
+      const elapsed = performance.now() - this.detachStartTime;
+      const t = Math.min(1.0, elapsed / 800);
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      this.detachProgress = this.startDetachVal + (this.targetDetachProgress - this.startDetachVal) * ease;
+      this.rebuildDetachedFaces();
+
+      if (t >= 1.0) {
+        this.isDetaching = false;
+        this.detachProgress = this.targetDetachProgress;
+        this.rebuildDetachedFaces();
+      }
     }
 
     if (this.renderer && this.scene && this.camera) {
