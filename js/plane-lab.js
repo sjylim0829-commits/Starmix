@@ -67,7 +67,7 @@ const PLANE_SHAPES = {
     angles: ['60°', '60°', '60°'],
     isAlwaysSimilar: true,
     reason: '세 내각의 크기가 항상 60°로 모두 같고, 세 변의 길이의 비가 항상 일정하므로 어떤 두 정삼각형도 항상 서로 닮은 도형입니다.',
-    hint: '크기를 키우거나 줄여도 세 각은 항상 60°로 변함없어 본래 정삼각형 모양이 그대로 유지됩니다!',
+    hint: '한 변의 길이를 조절해보세요! 크기가 변해도 세 각은 항상 60°로 변함없어 정삼각형 모양이 그대로 유지됩니다!',
     simPrompt: '정삼각형 △ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 적어보세요.',
     expectedSim: '△ABC ∽ △DEF'
   },
@@ -76,7 +76,7 @@ const PLANE_SHAPES = {
     name: '마름모',
     shortName: '마름모',
     type: 'polygon',
-    baseTitle: '마름모 ABCD (네 변 2.5)',
+    baseTitle: '마름모 ABCD (가로 대각선 4, 세로 대각선 3)',
     transTitle: '마름모 EFGH',
     refPoint: { x: 3, y: 3.5 },
     basePoly: [
@@ -89,8 +89,8 @@ const PLANE_SHAPES = {
     transLabels: ['E', 'F', 'G', 'H'],
     angles: ['106°', '74°', '106°', '74°'],
     isAlwaysSimilar: false,
-    reason: '네 변의 길이가 모두 같더라도 내각의 크기(두 대각선 길이의 비)가 다르면 대응각의 크기가 달라지므로 항상 닮음은 아닙니다.',
-    hint: '가로·세로 배율을 다르게 조작해보세요! 마름모가 홀쭉해지거나 뚱뚱해지며 내각이 완전히 달라집니다.',
+    reason: '네 변의 길이가 모두 같더라도 두 대각선의 길이의 비가 다르면 내각의 크기가 달라지므로 마름모는 항상 닮음인 것은 아닙니다.',
+    hint: '가로 대각선과 세로 대각선의 길이를 각각 조작해보세요! 두 대각선의 비율이 달라지면 네 내각이 변하며 모양이 왜곡됩니다.',
     simPrompt: '마름모 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
     expectedSim: '□ABCD ∽ □EFGH'
   },
@@ -99,7 +99,7 @@ const PLANE_SHAPES = {
     name: '정사각형',
     shortName: '정사각형',
     type: 'polygon',
-    baseTitle: '정사각형 ABCD (한 변 3)',
+    baseTitle: '정사각형 ABCD (한 변 3, 90°)',
     transTitle: '정사각형 EFGH',
     refPoint: { x: 1, y: 1 },
     basePoly: [
@@ -113,7 +113,7 @@ const PLANE_SHAPES = {
     angles: ['90°', '90°', '90°', '90°'],
     isAlwaysSimilar: true,
     reason: '네 내각의 크기가 항상 90°로 모두 같고, 세 변의 길이의 비가 항상 일정하므로 어떤 두 정사각형도 항상 서로 닮은 도형입니다.',
-    hint: '모든 정사각형은 네 각이 90°이고 네 변의 길이가 같아 크기에 상관없이 항상 닮음입니다!',
+    hint: '한 변의 길이를 조절해보세요! 모든 정사각형은 네 각이 90°이고 네 변의 길이가 같아 크기에 상관없이 항상 닮음입니다!',
     simPrompt: '정사각형 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
     expectedSim: '□ABCD ∽ □EFGH'
   },
@@ -122,14 +122,14 @@ const PLANE_SHAPES = {
     name: '원',
     shortName: '원',
     type: 'circle',
-    baseTitle: '원 O (반지름 r=1.5)',
+    baseTitle: '원 O (반지름 r = 1.5)',
     transTitle: "원 O'",
     baseCenter: { x: 3.2, y: 3.5 },
     baseRadius: 1.5,
     offset: { x: 7.2, y: 0 },
     isAlwaysSimilar: true,
     reason: '모든 원은 모양이 중심각 360°인 완전한 원형이며, 오직 반지름의 비에 의해서만 크기가 결정되므로 어떤 두 원도 항상 서로 닮은 도형입니다.',
-    hint: '원은 각도가 존재하지 않고 오직 반지름(크기)에 의해서만 결정되므로 모든 원은 항상 서로 닮음입니다!',
+    hint: '반지름의 길이를 조절해보세요! 원은 항상 완전한 원형이 유지되므로 모든 원은 항상 서로 닮음입니다!',
     simPrompt: "원 O와 원 O'의 닮음 관계를 확인해보세요. (모든 원은 항상 닮음)",
     expectedSim: "원 O ∽ 원 O'"
   }
@@ -176,7 +176,7 @@ class PlaneLab {
     this.setupControls();
     this.setupShapeSwitcher();
     this.setupMouseEvents();
-    this.render();
+    this.setShape(this.currentShape);
   }
 
   resizeCanvas() {
@@ -288,17 +288,48 @@ class PlaneLab {
     const btnProp = document.getElementById('btnModeProportional');
     const btnResetPlane = document.getElementById('btnResetPlane');
 
-    const updateSliderUI = () => {
-      if (scaleXSlider) scaleXSlider.value = this.scaleX;
-      if (scaleXVal) scaleXVal.textContent = `${this.scaleX.toFixed(1)}배`;
-      if (scaleYSlider) scaleYSlider.value = this.scaleY;
-      if (scaleYVal) scaleYVal.textContent = `${this.scaleY.toFixed(1)}배`;
-
-      if (Math.abs(this.scaleX - this.scaleY) < 0.01) {
+    this.updateSliderUI = () => {
+      if (this.currentShape === 'equilateral') {
+        const sideLen = (4.0 * this.scaleX).toFixed(1);
         if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
-        if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배`;
+        if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배 (한 변: ${sideLen})`;
+      } else if (this.currentShape === 'square') {
+        const sideLen = (3.0 * this.scaleX).toFixed(1);
+        if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
+        if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배 (한 변: ${sideLen})`;
+      } else if (this.currentShape === 'circle') {
+        const radiusLen = (1.5 * this.scaleX).toFixed(1);
+        if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
+        if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배 (반지름 r: ${radiusLen})`;
+      } else if (this.currentShape === 'rhombus') {
+        const horizDiag = (4.0 * this.scaleX).toFixed(1);
+        const vertDiag = (3.0 * this.scaleY).toFixed(1);
+        if (scaleXSlider) scaleXSlider.value = this.scaleX;
+        if (scaleXVal) scaleXVal.textContent = `${this.scaleX.toFixed(1)}배 (길이: ${horizDiag})`;
+        if (scaleYSlider) scaleYSlider.value = this.scaleY;
+        if (scaleYVal) scaleYVal.textContent = `${this.scaleY.toFixed(1)}배 (길이: ${vertDiag})`;
+
+        if (Math.abs(this.scaleX - this.scaleY) < 0.01) {
+          if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
+          if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배 (대각선 비율 일치)`;
+        } else {
+          if (scaleAllVal) scaleAllVal.textContent = '대각선 비율 다름';
+        }
       } else {
-        if (scaleAllVal) scaleAllVal.textContent = '비율 왜곡';
+        // right_triangle, isosceles
+        const baseSide = this.currentShape === 'right_triangle' ? 3.0 : 4.0;
+        const heightSide = 4.0;
+        if (scaleXSlider) scaleXSlider.value = this.scaleX;
+        if (scaleXVal) scaleXVal.textContent = `${this.scaleX.toFixed(1)}배 (밑변: ${(baseSide * this.scaleX).toFixed(1)})`;
+        if (scaleYSlider) scaleYSlider.value = this.scaleY;
+        if (scaleYVal) scaleYVal.textContent = `${this.scaleY.toFixed(1)}배 (높이: ${(heightSide * this.scaleY).toFixed(1)})`;
+
+        if (Math.abs(this.scaleX - this.scaleY) < 0.01) {
+          if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
+          if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배`;
+        } else {
+          if (scaleAllVal) scaleAllVal.textContent = '비율 왜곡';
+        }
       }
     };
 
@@ -307,23 +338,35 @@ class PlaneLab {
         const val = parseFloat(e.target.value);
         this.scaleX = val;
         this.scaleY = val;
-        updateSliderUI();
+        this.updateSliderUI();
         this.render();
       });
     }
 
     if (scaleXSlider) {
       scaleXSlider.addEventListener('input', (e) => {
-        this.scaleX = parseFloat(e.target.value);
-        updateSliderUI();
+        const val = parseFloat(e.target.value);
+        if (this.currentShape === 'equilateral' || this.currentShape === 'square' || this.currentShape === 'circle') {
+          this.scaleX = val;
+          this.scaleY = val;
+        } else {
+          this.scaleX = val;
+        }
+        this.updateSliderUI();
         this.render();
       });
     }
 
     if (scaleYSlider) {
       scaleYSlider.addEventListener('input', (e) => {
-        this.scaleY = parseFloat(e.target.value);
-        updateSliderUI();
+        const val = parseFloat(e.target.value);
+        if (this.currentShape === 'equilateral' || this.currentShape === 'square' || this.currentShape === 'circle') {
+          this.scaleX = val;
+          this.scaleY = val;
+        } else {
+          this.scaleY = val;
+        }
+        this.updateSliderUI();
         this.render();
       });
     }
@@ -331,7 +374,7 @@ class PlaneLab {
     if (btnProp) {
       btnProp.addEventListener('click', () => {
         this.scaleY = this.scaleX;
-        updateSliderUI();
+        this.updateSliderUI();
         this.render();
       });
     }
@@ -340,7 +383,7 @@ class PlaneLab {
       btnResetPlane.addEventListener('click', () => {
         this.scaleX = 2.0;
         this.scaleY = 2.0;
-        updateSliderUI();
+        this.updateSliderUI();
         updateOverlayUI(false);
         this.animateOverlay(0.0);
         const simInput = document.getElementById('inputSimSymbol');
@@ -414,6 +457,62 @@ class PlaneLab {
       this.transformedOffset = shape.offset;
     }
 
+    // Configure shape-specific sliders and controls
+    const scaleXGroup = document.getElementById('planeScaleXGroup');
+    const scaleYGroup = document.getElementById('planeScaleYGroup');
+    const scaleXLabel = document.getElementById('planeScaleXLabel');
+    const scaleYLabel = document.getElementById('planeScaleYLabel');
+    const scaleAllLabel = document.getElementById('planeScaleAllLabel');
+    const btnProp = document.getElementById('btnModeProportional');
+    const hintEl = document.getElementById('planeCanvasHint');
+
+    if (shapeKey === 'equilateral') {
+      if (scaleXGroup) scaleXGroup.style.display = 'none';
+      if (scaleYGroup) scaleYGroup.style.display = 'none';
+      if (btnProp) btnProp.style.display = 'none';
+      if (scaleAllLabel) scaleAllLabel.textContent = '한 변의 길이 조절 (정삼각형 유지)';
+      if (hintEl) hintEl.textContent = '💡 정삼각형: 한 변의 길이를 조절해도 세 각은 항상 60°로 변함없어 항상 서로 닮음입니다.';
+    } else if (shapeKey === 'square') {
+      if (scaleXGroup) scaleXGroup.style.display = 'none';
+      if (scaleYGroup) scaleYGroup.style.display = 'none';
+      if (btnProp) btnProp.style.display = 'none';
+      if (scaleAllLabel) scaleAllLabel.textContent = '한 변의 길이 조절 (정사각형 유지)';
+      if (hintEl) hintEl.textContent = '💡 정사각형: 한 변의 길이를 조절해도 네 각은 항상 90°로 변함없어 항상 서로 닮음입니다.';
+    } else if (shapeKey === 'circle') {
+      if (scaleXGroup) scaleXGroup.style.display = 'none';
+      if (scaleYGroup) scaleYGroup.style.display = 'none';
+      if (btnProp) btnProp.style.display = 'none';
+      if (scaleAllLabel) scaleAllLabel.textContent = '반지름의 길이 조절 (원형 유지)';
+      if (hintEl) hintEl.textContent = '💡 원: 반지름의 길이를 조절해도 항상 완전한 원형이 유지되므로 모든 원은 항상 서로 닮음입니다.';
+    } else if (shapeKey === 'rhombus') {
+      if (scaleXGroup) scaleXGroup.style.display = 'block';
+      if (scaleYGroup) scaleYGroup.style.display = 'block';
+      if (btnProp) {
+        btnProp.style.display = 'block';
+        btnProp.textContent = '✓ 대각선 비율 일치';
+      }
+      if (scaleXLabel) scaleXLabel.textContent = '가로 대각선 길이 조절';
+      if (scaleYLabel) scaleYLabel.textContent = '세로 대각선 길이 조절';
+      if (scaleAllLabel) scaleAllLabel.textContent = '두 대각선 정비율 확대 (k배)';
+      if (hintEl) hintEl.textContent = '💡 마름모: 가로 대각선과 세로 대각선의 길이를 각각 조작하여 대각선 비율과 각도 변화를 관찰해보세요.';
+    } else {
+      // right_triangle, isosceles
+      if (scaleXGroup) scaleXGroup.style.display = 'block';
+      if (scaleYGroup) scaleYGroup.style.display = 'block';
+      if (btnProp) {
+        btnProp.style.display = 'block';
+        btnProp.textContent = '✓ 정비율 맞추기';
+      }
+      if (scaleXLabel) scaleXLabel.textContent = '가로(밑변) 배율 조절';
+      if (scaleYLabel) scaleYLabel.textContent = '세로(높이) 배율 조절';
+      if (scaleAllLabel) scaleAllLabel.textContent = '전체 정비율 확대 (k배)';
+      if (hintEl) {
+        hintEl.textContent = shapeKey === 'isosceles'
+          ? '💡 이등변삼각형: 밑변과 높이를 다르게 늘려 꼭지각이 뾰족해지거나 납작해지는 왜곡을 관찰해보세요.'
+          : '💡 직각삼각형: 가로(밑변)와 세로(높이) 배율을 다르게 조작하여 직각삼각형이 왜곡되는지 관찰해보세요.';
+      }
+    }
+
     // Update Overlay Button text
     const btnOverlay = document.getElementById('btnTriggerOverlay');
     if (btnOverlay) {
@@ -448,21 +547,10 @@ class PlaneLab {
     const toggleOverlay = document.getElementById('toggleOverlay');
     if (toggleOverlay) toggleOverlay.checked = false;
 
-    // Reset scales to 2.0
+    // Reset scales to 2.0 and update UI
     this.scaleX = 2.0;
     this.scaleY = 2.0;
-    const scaleXSlider = document.getElementById('planeScaleXSlider');
-    const scaleXVal = document.getElementById('planeScaleXVal');
-    const scaleYSlider = document.getElementById('planeScaleYSlider');
-    const scaleYVal = document.getElementById('planeScaleYVal');
-    const scaleAllSlider = document.getElementById('planeScaleSlider');
-    const scaleAllVal = document.getElementById('planeScaleVal');
-    if (scaleXSlider) scaleXSlider.value = 2.0;
-    if (scaleXVal) scaleXVal.textContent = '2.0배';
-    if (scaleYSlider) scaleYSlider.value = 2.0;
-    if (scaleYVal) scaleYVal.textContent = '2.0배';
-    if (scaleAllSlider) scaleAllSlider.value = 2.0;
-    if (scaleAllVal) scaleAllVal.textContent = '2.0배';
+    if (this.updateSliderUI) this.updateSliderUI();
 
     // Clear student drawing if in draw mode
     this.drawnPoints = [];
@@ -797,6 +885,9 @@ class PlaneLab {
     // Side length measurement tool
     if (this.showLengths && poly.length >= 3) {
       this.drawSideLengths(poly, color);
+      if (this.currentShape === 'rhombus' && poly.length === 4) {
+        this.drawRhombusDiagonals(poly, color);
+      }
     }
 
     // Angle protractor measurement tool
@@ -864,6 +955,69 @@ class PlaneLab {
       // Draw clean white pill badge
       this.drawPillBadge(dist, sMid.x, sMid.y, color);
     }
+    this.ctx.restore();
+  }
+
+  drawRhombusDiagonals(poly, color) {
+    if (!poly || poly.length !== 4) return;
+    this.ctx.save();
+
+    // poly vertices:
+    // 0: A/E (bottom)
+    // 1: B/F (right)
+    // 2: C/G (top)
+    // 3: D/H (left)
+    const sBottom = this.toScreen(poly[0]);
+    const sRight = this.toScreen(poly[1]);
+    const sTop = this.toScreen(poly[2]);
+    const sLeft = this.toScreen(poly[3]);
+
+    const sCenter = {
+      x: (sLeft.x + sRight.x) / 2,
+      y: (sTop.y + sBottom.y) / 2
+    };
+
+    const horizDist = this.getDist(poly[3], poly[1]);
+    const vertDist = this.getDist(poly[0], poly[2]);
+
+    // Draw dashed lines for both diagonals
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1.6;
+    this.ctx.setLineDash([4, 3]);
+
+    // Horizontal diagonal (left to right)
+    this.ctx.beginPath();
+    this.ctx.moveTo(sLeft.x, sLeft.y);
+    this.ctx.lineTo(sRight.x, sRight.y);
+    this.ctx.stroke();
+
+    // Vertical diagonal (bottom to top)
+    this.ctx.beginPath();
+    this.ctx.moveTo(sBottom.x, sBottom.y);
+    this.ctx.lineTo(sTop.x, sTop.y);
+    this.ctx.stroke();
+
+    this.ctx.setLineDash([]);
+
+    // Right-angle symbol at intersection of diagonals
+    const s = 9;
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1.2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(sCenter.x + s, sCenter.y);
+    this.ctx.lineTo(sCenter.x + s, sCenter.y - s);
+    this.ctx.lineTo(sCenter.x, sCenter.y - s);
+    this.ctx.stroke();
+
+    // Badges for diagonal lengths
+    // Horizontal diagonal badge (placed slightly above center)
+    const hBadgeY = sCenter.y - 13;
+    this.drawPillBadge(`가로 대각선: ${horizDist.toFixed(1)}`, sCenter.x, hBadgeY, color, 'rgba(255, 255, 255, 0.95)', color);
+
+    // Vertical diagonal badge (placed slightly below center)
+    const vBadgeY = sCenter.y + 13;
+    this.drawPillBadge(`세로 대각선: ${vertDist.toFixed(1)}`, sCenter.x, vBadgeY, color, 'rgba(255, 255, 255, 0.95)', color);
+
     this.ctx.restore();
   }
 
@@ -939,7 +1093,7 @@ class PlaneLab {
         this.ctx.arc(sPt.x, sPt.y, arcR, ang1, ang2, counterClockwise);
         this.ctx.stroke();
 
-        const labelDist = 30;
+        const labelDist = (this.currentShape === 'rhombus') ? 22 : 30;
         const lx = sPt.x + bisector.x * labelDist;
         const ly = sPt.y + bisector.y * labelDist;
         this.drawPillBadge(angleText, lx, ly, color, 'rgba(255, 255, 255, 0.9)', '#334155');
@@ -1419,7 +1573,22 @@ class PlaneLab {
     const explainAlways = document.getElementById('alwaysSimilarExplanation');
 
     if (scaleRatioText) {
-      scaleRatioText.textContent = `가로: ${this.scaleX.toFixed(1)}배, 세로: ${this.scaleY.toFixed(1)}배`;
+      if (this.currentShape === 'equilateral') {
+        const sideLen = (4.0 * this.scaleX).toFixed(1);
+        scaleRatioText.textContent = `한 변의 길이: ${sideLen} (${this.scaleX.toFixed(1)}배)`;
+      } else if (this.currentShape === 'square') {
+        const sideLen = (3.0 * this.scaleX).toFixed(1);
+        scaleRatioText.textContent = `한 변의 길이: ${sideLen} (${this.scaleX.toFixed(1)}배)`;
+      } else if (this.currentShape === 'circle') {
+        const rLen = (1.5 * this.scaleX).toFixed(1);
+        scaleRatioText.textContent = `반지름 r: ${rLen} (${this.scaleX.toFixed(1)}배)`;
+      } else if (this.currentShape === 'rhombus') {
+        const hDiag = (4.0 * this.scaleX).toFixed(1);
+        const vDiag = (3.0 * this.scaleY).toFixed(1);
+        scaleRatioText.textContent = `가로 대각선: ${hDiag} (${this.scaleX.toFixed(1)}배), 세로 대각선: ${vDiag} (${this.scaleY.toFixed(1)}배)`;
+      } else {
+        scaleRatioText.textContent = `가로: ${this.scaleX.toFixed(1)}배, 세로: ${this.scaleY.toFixed(1)}배`;
+      }
     }
 
     const prefix = shape.type === 'circle' ? '' : (shape.basePoly.length === 4 ? '□' : '△');
@@ -1432,26 +1601,54 @@ class PlaneLab {
         badge.innerHTML = `✓ 닮음 관계 성립 (${baseName} ∽ ${transName})`;
       } else {
         badge.className = 'badge-similarity no';
-        badge.innerHTML = `✗ 닮음 아님 (가로·세로 비율 왜곡)`;
+        if (this.currentShape === 'rhombus') {
+          badge.innerHTML = `✗ 닮음 아님 (두 대각선 비율 왜곡으로 각도 변화)`;
+        } else {
+          badge.innerHTML = `✗ 닮음 아님 (가로·세로 비율 왜곡)`;
+        }
       }
     }
 
     if (detailBox) {
       if (shape.type === 'circle') {
+        detailBox.innerHTML = `
+          <div class="data-row"><span>대응 반지름의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (일정)</b></div>
+          <div class="data-row"><span>반지름 길이:</span> <b>기준 r=1.5 ➜ 확대 r'=${(1.5 * this.scaleX).toFixed(1)}</b></div>
+          <div class="data-row"><span>도형 형태:</span> <b>항상 완전한 원형 유지 (중심각 360°)</b></div>
+          <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
+        `;
+      } else if (this.currentShape === 'equilateral') {
+        detailBox.innerHTML = `
+          <div class="data-row"><span>대응변의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (세 변 모두 일정)</b></div>
+          <div class="data-row"><span>한 변의 길이:</span> <b>기준 4.0 ➜ 확대 ${(4.0 * this.scaleX).toFixed(1)}</b></div>
+          <div class="data-row"><span>대응각의 크기:</span> <b>60°, 60°, 60° (항상 일정)</b></div>
+          <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
+        `;
+      } else if (this.currentShape === 'square') {
+        detailBox.innerHTML = `
+          <div class="data-row"><span>대응변의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (네 변 모두 일정)</b></div>
+          <div class="data-row"><span>한 변의 길이:</span> <b>기준 3.0 ➜ 확대 ${(3.0 * this.scaleX).toFixed(1)}</b></div>
+          <div class="data-row"><span>대응각의 크기:</span> <b>90°, 90°, 90°, 90° (항상 일정)</b></div>
+          <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
+        `;
+      } else if (this.currentShape === 'rhombus') {
         if (isSimilar) {
           detailBox.innerHTML = `
-            <div class="data-row"><span>대응 반지름의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (일정)</b></div>
-            <div class="data-row"><span>도형 형태:</span> <b>완전한 원형 유지 (중심각 360°)</b></div>
+            <div class="data-row"><span>대각선 길이의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (두 대각선 비율 일치)</b></div>
+            <div class="data-row"><span>대각선 길이:</span> <b>가로 ${(4.0 * this.scaleX).toFixed(1)}, 세로 ${(3.0 * this.scaleY).toFixed(1)}</b></div>
+            <div class="data-row"><span>대응각의 크기:</span> <b>106°, 74°, 106°, 74° (보존됨)</b></div>
             <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
           `;
         } else {
           detailBox.innerHTML = `
-            <div class="data-row"><span>가로 반지름 배율:</span> <b>${this.scaleX.toFixed(1)}배</b></div>
-            <div class="data-row"><span>세로 반지름 배율:</span> <b>${this.scaleY.toFixed(1)}배</b></div>
-            <div class="data-row" style="color: #dc2626;"><span>도형 왜곡:</span> <b>원이 타원으로 찌그러짐!</b></div>
+            <div class="data-row"><span>가로 대각선:</span> <b>기준 4.0 ➜ ${(4.0 * this.scaleX).toFixed(1)} (${this.scaleX.toFixed(1)}배)</b></div>
+            <div class="data-row"><span>세로 대각선:</span> <b>기준 3.0 ➜ ${(3.0 * this.scaleY).toFixed(1)} (${this.scaleY.toFixed(1)}배)</b></div>
+            <div class="data-row" style="color: #dc2626;"><span>대각선 비 불일치:</span> <b>두 대각선 비율이 달라져 내각이 왜곡됨!</b></div>
+            <div class="data-row" style="color: #dc2626;"><span>각도 변화:</span> <b>네 변은 같지만 대응각이 달라져 닮음 아님</b></div>
           `;
         }
       } else {
+        // right_triangle, isosceles
         if (isSimilar) {
           const anglesStr = shape.angles ? shape.angles.join(', ') : '불변';
           detailBox.innerHTML = `
