@@ -373,7 +373,7 @@
         <div class="viewport-card">
           <div class="viewport-toolbar">
             <div class="toolbar-group">
-              <span>🧊 기준 직육면체: <b>가로 2 × 세로 3 × 높이 4</b></span>
+              <span id="solidToolbarTitle">🧊 기준 직육면체: <b>가로 2 × 세로 3 × 높이 4</b></span>
               <span style="margin: 0 0.2rem; color: #cbd5e1;">|</span>
               <span style="font-size: 0.8rem; color: var(--primary);">🖱️ 3D 면을 직접 클릭해보세요!</span>
             </div>
@@ -382,12 +382,14 @@
             <div class="toolbar-group">
               <label class="tool-chip">
                 <input type="checkbox" id="toggle3DDimensions" checked>
-                <span>📏 3D 모서리 길이</span>
+                <span>📏 3D 치수</span>
               </label>
               <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; margin-left: 0.2rem;">대응면:</span>
-              <button class="face-select-chip active" data-face="front" style="padding: 0.35rem 0.65rem; background: #fffbeb; border: 1.5px solid #f59e0b; color: #b45309; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">앞면 (2×4)</button>
-              <button class="face-select-chip" data-face="top" style="padding: 0.35rem 0.65rem; background: white; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">윗면 (2×3)</button>
-              <button class="face-select-chip" data-face="side" style="padding: 0.35rem 0.65rem; background: white; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">옆면 (3×4)</button>
+              <div id="solidFaceChipsGroup" style="display: inline-flex; gap: 0.25rem;">
+                <button class="face-select-chip active" data-face="front">앞면 (2×4)</button>
+                <button class="face-select-chip" data-face="top">윗면 (2×3)</button>
+                <button class="face-select-chip" data-face="side">옆면 (3×4)</button>
+              </div>
               <button id="btnResetSolidView" class="btn btn-secondary btn-sm" style="margin-left: 0.3rem;">시점 초기화</button>
             </div>
           </div>
@@ -431,6 +433,16 @@
 
         <!-- Right Control Sidebar -->
         <aside class="control-sidebar">
+          <!-- Solid Shape Selector Card -->
+          <div class="card" style="padding: 0.55rem 0.75rem; margin-bottom: 0.65rem;">
+            <div class="card-title" style="margin-bottom: 0.35rem; font-size: 0.85rem;">탐구 입체도형 선택</div>
+            <div class="submode-switch" id="solidShapeSwitcher" style="margin-bottom: 0;">
+              <button class="submode-btn active" data-shape="cuboid" style="padding: 0.35rem 0.4rem; font-size: 0.78rem;">🧊 직육면체</button>
+              <button class="submode-btn" data-shape="pyramid" style="padding: 0.35rem 0.4rem; font-size: 0.78rem;">🔺 삼각뿔</button>
+              <button class="submode-btn" data-shape="cylinder" style="padding: 0.35rem 0.4rem; font-size: 0.78rem;">🥫 원기둥</button>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-title">입체도형 조작 & 지도안 프리셋</div>
 
@@ -439,10 +451,10 @@
               <div class="control-label"><span>지도안 핵심 실험 프리셋</span></div>
               <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                 <button id="btnPreset15" class="btn btn-secondary btn-sm btn-block">
-                  1. 전체 모서리 1.5배 균일 확대 (닮음)
+                  1. 전체 1.5배 균일 확대 (닮음)
                 </button>
                 <button id="btnPreset20" class="btn btn-primary btn-sm btn-block">
-                  2. 전체 모서리 2.0배 균일 확대 (닮음)
+                  2. 전체 2.0배 균일 확대 (닮음)
                 </button>
                 <button id="btnModeAxisSplit" class="btn btn-danger btn-sm btn-block">
                   3. [축 분리 모드] 높이만 3배 왜곡 (비닮음)
@@ -452,7 +464,7 @@
 
             <div class="control-group">
               <div class="control-label">
-                <span>전체 모서리 균일 확대 (k배)</span>
+                <span id="solidScaleAllLabel">전체 균일 확대 (k배)</span>
                 <span id="solidScaleAllVal" class="control-value">1.5배</span>
               </div>
               <input type="range" id="solidScaleAll" min="0.5" max="2.5" step="0.1" value="1.5">
@@ -460,7 +472,7 @@
 
             <div class="control-group">
               <div class="control-label">
-                <span>높이만 개별 조절 (축 분리)</span>
+                <span id="solidHeightLabel">높이만 개별 조절 (축 분리)</span>
                 <span id="solidHeightVal" class="control-value">1.5배</span>
               </div>
               <input type="range" id="solidHeightSlider" min="0.5" max="3.0" step="0.1" value="1.5">
@@ -513,7 +525,7 @@
           <b>1. 평면 랩(1단계):</b> 모눈 위에서 삼각형의 각도와 변을 직접 관찰하고, <code>각도 측정기</code>와 <code>포개어보기</code>로 각도의 불변성을 증명합니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>2. 입체 랩(2단계):</b> 3D 직육면체의 <b>면(앞면, 윗면, 옆면)을 직접 클릭</b>하여 대응면이 닮음이어야 전체 입체가 닮음이 됨을 스스로 발견합니다.
+          <b>2. 입체 랩(2단계):</b> 직육면체, 삼각뿔, 원기둥의 <b>대응면을 직접 클릭</b>하여 대응면이 닮음이어야 전체 입체가 닮음이 됨을 스스로 발견합니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
           <b>3. 미션(3단계):</b> 모눈에서 결손된 꼭짓점을 찾아 클릭하고, 직사각형의 닮음비를 주관식으로 입력하여 실력을 점검합니다.
@@ -528,10 +540,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=3.6"></script>
-  <script src="js/plane-lab.js?v=3.6"></script>
-  <script src="js/solid-lab.js?v=3.6"></script>
-  <script src="js/missions.js?v=3.6"></script>
-  <script src="js/app.js?v=3.6"></script>
+  <script src="js/intro-lab.js?v=3.7"></script>
+  <script src="js/plane-lab.js?v=3.7"></script>
+  <script src="js/solid-lab.js?v=3.7"></script>
+  <script src="js/missions.js?v=3.7"></script>
+  <script src="js/app.js?v=3.7"></script>
 </body>
 </html>
