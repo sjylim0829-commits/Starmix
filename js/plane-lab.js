@@ -3,26 +3,154 @@
  * Youngseo Middle School Grade 2 Class 7 Customization
  */
 
+// Textbook "생각 넓히기" 6 Plane Shapes Configuration
+const PLANE_SHAPES = {
+  right_triangle: {
+    key: 'right_triangle',
+    name: '직각삼각형 (3, 4, 5)',
+    shortName: '직각삼각형',
+    type: 'polygon',
+    baseTitle: '△ABC (밑변 3, 높이 4)',
+    transTitle: '△DEF',
+    refPoint: { x: 1, y: 1 },
+    basePoly: [
+      { x: 1, y: 1, label: 'A' },
+      { x: 4, y: 1, label: 'B' },
+      { x: 1, y: 5, label: 'C' }
+    ],
+    offset: { x: 6, y: 0 },
+    transLabels: ['D', 'E', 'F'],
+    angles: ['90°', '53°', '37°'],
+    isAlwaysSimilar: false,
+    reason: '한 각이 90°(직각)이더라도 나머지 두 예각의 크기(밑변과 높이의 비)가 다르면 닮음이 아닙니다.',
+    hint: '가로/세로 배율 슬라이더를 다르게 조작해보세요! 예각의 크기가 달라지면서 직각삼각형 모양이 왜곡됩니다.',
+    simPrompt: '△ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 직접 적어보세요.',
+    expectedSim: '△ABC ∽ △DEF'
+  },
+  isosceles: {
+    key: 'isosceles',
+    name: '이등변삼각형',
+    shortName: '이등변삼각형',
+    type: 'polygon',
+    baseTitle: '이등변△ABC (밑변 4, 높이 4)',
+    transTitle: '이등변△DEF',
+    refPoint: { x: 1, y: 1 },
+    basePoly: [
+      { x: 1, y: 1, label: 'A' },
+      { x: 5, y: 1, label: 'B' },
+      { x: 3, y: 5, label: 'C' }
+    ],
+    offset: { x: 6, y: 0 },
+    transLabels: ['D', 'E', 'F'],
+    angles: ['63°', '63°', '53°'],
+    isAlwaysSimilar: false,
+    reason: '두 변의 길이가 같더라도 꼭지각(또는 두 밑각)의 크기가 다르면 대응각의 크기가 달라지므로 항상 닮음인 것은 아닙니다.',
+    hint: '가로만 늘리거나 세로만 늘려보세요! 꼭지각이 뾰족해지거나 납작해지며 비닮음이 됩니다.',
+    simPrompt: '이등변삼각형 △ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 적어보세요.',
+    expectedSim: '△ABC ∽ △DEF'
+  },
+  equilateral: {
+    key: 'equilateral',
+    name: '정삼각형',
+    shortName: '정삼각형',
+    type: 'polygon',
+    baseTitle: '정△ABC (한 변 4, 60°)',
+    transTitle: '정△DEF',
+    refPoint: { x: 1, y: 1 },
+    basePoly: [
+      { x: 1, y: 1, label: 'A' },
+      { x: 5, y: 1, label: 'B' },
+      { x: 3, y: 1 + 2 * Math.sqrt(3), label: 'C' }
+    ],
+    offset: { x: 6, y: 0 },
+    transLabels: ['D', 'E', 'F'],
+    angles: ['60°', '60°', '60°'],
+    isAlwaysSimilar: true,
+    reason: '세 내각의 크기가 항상 60°로 모두 같고, 세 변의 길이의 비가 항상 일정하므로 어떤 두 정삼각형도 항상 서로 닮은 도형입니다.',
+    hint: '크기를 키우거나 줄여도 세 각은 항상 60°로 변함없어 본래 정삼각형 모양이 그대로 유지됩니다!',
+    simPrompt: '정삼각형 △ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 적어보세요.',
+    expectedSim: '△ABC ∽ △DEF'
+  },
+  rhombus: {
+    key: 'rhombus',
+    name: '마름모',
+    shortName: '마름모',
+    type: 'polygon',
+    baseTitle: '마름모 ABCD (네 변 2.5)',
+    transTitle: '마름모 EFGH',
+    refPoint: { x: 3, y: 3.5 },
+    basePoly: [
+      { x: 3, y: 2, label: 'A' },
+      { x: 5, y: 3.5, label: 'B' },
+      { x: 3, y: 5, label: 'C' },
+      { x: 1, y: 3.5, label: 'D' }
+    ],
+    offset: { x: 7, y: 0 },
+    transLabels: ['E', 'F', 'G', 'H'],
+    angles: ['106°', '74°', '106°', '74°'],
+    isAlwaysSimilar: false,
+    reason: '네 변의 길이가 모두 같더라도 내각의 크기(두 대각선 길이의 비)가 다르면 대응각의 크기가 달라지므로 항상 닮음은 아닙니다.',
+    hint: '가로·세로 배율을 다르게 조작해보세요! 마름모가 홀쭉해지거나 뚱뚱해지며 내각이 완전히 달라집니다.',
+    simPrompt: '마름모 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
+    expectedSim: '□ABCD ∽ □EFGH'
+  },
+  square: {
+    key: 'square',
+    name: '정사각형',
+    shortName: '정사각형',
+    type: 'polygon',
+    baseTitle: '정사각형 ABCD (한 변 3)',
+    transTitle: '정사각형 EFGH',
+    refPoint: { x: 1, y: 1 },
+    basePoly: [
+      { x: 1, y: 1, label: 'A' },
+      { x: 4, y: 1, label: 'B' },
+      { x: 4, y: 4, label: 'C' },
+      { x: 1, y: 4, label: 'D' }
+    ],
+    offset: { x: 6, y: 0 },
+    transLabels: ['E', 'F', 'G', 'H'],
+    angles: ['90°', '90°', '90°', '90°'],
+    isAlwaysSimilar: true,
+    reason: '네 내각의 크기가 항상 90°로 모두 같고, 세 변의 길이의 비가 항상 일정하므로 어떤 두 정사각형도 항상 서로 닮은 도형입니다.',
+    hint: '모든 정사각형은 네 각이 90°이고 네 변의 길이가 같아 크기에 상관없이 항상 닮음입니다!',
+    simPrompt: '정사각형 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
+    expectedSim: '□ABCD ∽ □EFGH'
+  },
+  circle: {
+    key: 'circle',
+    name: '원',
+    shortName: '원',
+    type: 'circle',
+    baseTitle: '원 O (반지름 r=1.5)',
+    transTitle: "원 O'",
+    baseCenter: { x: 3.2, y: 3.5 },
+    baseRadius: 1.5,
+    offset: { x: 7.2, y: 0 },
+    isAlwaysSimilar: true,
+    reason: '모든 원은 모양이 중심각 360°인 완전한 원형이며, 오직 반지름의 비에 의해서만 크기가 결정되므로 어떤 두 원도 항상 서로 닮은 도형입니다.',
+    hint: '원은 각도가 존재하지 않고 오직 반지름(크기)에 의해서만 결정되므로 모든 원은 항상 서로 닮음입니다!',
+    simPrompt: "원 O와 원 O'의 닮음 관계를 확인해보세요. (모든 원은 항상 닮음)",
+    expectedSim: "원 O ∽ 원 O'"
+  }
+};
+
 class PlaneLab {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
 
+    // Current Shape Selection ('right_triangle', 'isosceles', 'equilateral', 'rhombus', 'square', 'circle')
+    this.currentShape = 'right_triangle';
+
     // Grid configuration
     this.gridSize = 36; // pixels per unit
     this.origin = { x: 70, y: 420 };
 
-    // Standard Reference Right Triangle ABC (Base 3, Height 4, Hypotenuse 5)
-    // A: (1, 1), B: (4, 1), C: (1, 5) -> Angle A is 90 deg!
-    this.basePoly = [
-      { x: 1, y: 1, label: 'A' },
-      { x: 4, y: 1, label: 'B' },
-      { x: 1, y: 5, label: 'C' }
-    ];
-
-    // Transformed Poly offset in grid units
-    this.transformedOffset = { x: 5, y: 0 };
+    // Standard Reference Base Geometry
+    this.basePoly = PLANE_SHAPES.right_triangle.basePoly;
+    this.transformedOffset = PLANE_SHAPES.right_triangle.offset;
 
     // Transformation State
     this.scaleX = 2.0;
@@ -46,6 +174,7 @@ class PlaneLab {
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
     this.setupControls();
+    this.setupShapeSwitcher();
     this.setupMouseEvents();
     this.render();
   }
@@ -242,6 +371,108 @@ class PlaneLab {
 
     // Similarity Notation Typing Activity
     this.setupSimilarityTypingActivity();
+
+    // Property Fill-in-the-Blank Quiz
+    this.setupPropertyQuiz();
+  }
+
+  setupShapeSwitcher() {
+    const shapeBtns = document.querySelectorAll('.plane-shape-btn');
+    shapeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const shapeKey = btn.dataset.shape;
+        if (shapeKey) this.setShape(shapeKey);
+      });
+    });
+  }
+
+  setShape(shapeKey) {
+    if (!PLANE_SHAPES[shapeKey]) return;
+    this.currentShape = shapeKey;
+    const shape = PLANE_SHAPES[shapeKey];
+
+    // Update button active state
+    document.querySelectorAll('.plane-shape-btn').forEach(btn => {
+      if (btn.dataset.shape === shapeKey) {
+        btn.classList.add('btn-primary', 'active');
+        btn.classList.remove('btn-secondary');
+      } else {
+        btn.classList.remove('btn-primary', 'active');
+        btn.classList.add('btn-secondary');
+      }
+    });
+
+    // Update Toolbar labels
+    const baseLabel = document.getElementById('planeBaseShapeName');
+    const transLabel = document.getElementById('planeTransShapeName');
+    if (baseLabel) baseLabel.textContent = shape.baseTitle;
+    if (transLabel) transLabel.textContent = shape.transTitle;
+
+    // Update basePoly and offset if polygon
+    if (shape.type === 'polygon') {
+      this.basePoly = shape.basePoly;
+      this.transformedOffset = shape.offset;
+    }
+
+    // Update Overlay Button text
+    const btnOverlay = document.getElementById('btnTriggerOverlay');
+    if (btnOverlay) {
+      if (shape.type === 'circle') {
+        btnOverlay.textContent = "✨ 원 O 확대하여 원 O'에 포개어보기 (합동 확인)";
+      } else if (shape.basePoly && shape.basePoly.length === 4) {
+        btnOverlay.textContent = `✨ □ABCD 확대하여 □${shape.transLabels.join('')}에 포개어보기 (합동 확인)`;
+      } else {
+        btnOverlay.textContent = "✨ △ABC 확대하여 △DEF에 포개어보기 (합동 확인)";
+      }
+      btnOverlay.classList.remove('btn-primary');
+      btnOverlay.classList.add('btn-secondary');
+    }
+
+    // Update Typing instruction & reset typing input
+    const simInst = document.getElementById('planeSimInstruction');
+    if (simInst) {
+      simInst.innerHTML = shape.simPrompt;
+    }
+    const simInput = document.getElementById('inputSimSymbol');
+    const simFeedback = document.getElementById('simSymbolFeedback');
+    if (simInput) simInput.value = '';
+    if (simFeedback) simFeedback.style.display = 'none';
+
+    // Cancel any overlay animation
+    if (this.overlayAnimId) {
+      cancelAnimationFrame(this.overlayAnimId);
+      this.overlayAnimId = null;
+    }
+    this.overlayProgress = 0.0;
+    this.isOverlay = false;
+    const toggleOverlay = document.getElementById('toggleOverlay');
+    if (toggleOverlay) toggleOverlay.checked = false;
+
+    // Reset scales to 2.0
+    this.scaleX = 2.0;
+    this.scaleY = 2.0;
+    const scaleXSlider = document.getElementById('planeScaleXSlider');
+    const scaleXVal = document.getElementById('planeScaleXVal');
+    const scaleYSlider = document.getElementById('planeScaleYSlider');
+    const scaleYVal = document.getElementById('planeScaleYVal');
+    const scaleAllSlider = document.getElementById('planeScaleSlider');
+    const scaleAllVal = document.getElementById('planeScaleVal');
+    if (scaleXSlider) scaleXSlider.value = 2.0;
+    if (scaleXVal) scaleXVal.textContent = '2.0배';
+    if (scaleYSlider) scaleYSlider.value = 2.0;
+    if (scaleYVal) scaleYVal.textContent = '2.0배';
+    if (scaleAllSlider) scaleAllSlider.value = 2.0;
+    if (scaleAllVal) scaleAllVal.textContent = '2.0배';
+
+    // Clear student drawing if in draw mode
+    this.drawnPoints = [];
+    if (this.currentTabMode === 'draw') {
+      this.updateDrawingStatus(shape.type === 'circle' 
+        ? '원은 상단 [🔍 탐구 & 왜곡 실험] 모드에서 슬라이더를 조작하여 탐구해보세요!'
+        : '모눈 위의 점을 클릭하여 첫 번째 꼭짓점을 찍으세요.');
+    }
+
+    this.render();
   }
 
   updateButtonsStyle(buttons, activeBtn) {
@@ -510,8 +741,39 @@ class PlaneLab {
     this.ctx.restore();
   }
 
+  drawPillBadge(text, cx, cy, color, bgColor = 'rgba(255, 255, 255, 0.95)', textColor = null) {
+    this.ctx.save();
+    this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+
+    const textMetrics = this.ctx.measureText(text);
+    const badgeW = Math.max(30, textMetrics.width + 14);
+    const badgeH = 18;
+    const badgeX = cx - badgeW / 2;
+    const badgeY = cy - badgeH / 2;
+
+    this.ctx.fillStyle = bgColor;
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 1.2;
+
+    if (this.ctx.roundRect) {
+      this.ctx.beginPath();
+      this.ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
+      this.ctx.fill();
+      this.ctx.stroke();
+    } else {
+      this.ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+      this.ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+    }
+
+    this.ctx.fillStyle = textColor || color;
+    this.ctx.fillText(text, cx, cy);
+    this.ctx.restore();
+  }
+
   renderPolygon(poly, color, fillColor, labelPrefix = '', angles = null) {
-    if (poly.length < 2) return;
+    if (!poly || poly.length < 2) return;
 
     this.ctx.beginPath();
     const first = this.toScreen(poly[0]);
@@ -558,19 +820,24 @@ class PlaneLab {
         this.ctx.textBaseline = 'middle';
         const label = labelPrefix ? `${labelPrefix}${idx + 1}` : pt.label;
         
-        // Place vertex letter label cleanly outside the polygon corner
+        // Place vertex letter label cleanly outside polygon corner
         let offX = 10;
         let offY = -10;
         if (poly.length === 3) {
-          if (idx === 0) { // Right-angle corner (A or D)
-            offX = -12;
-            offY = 12;
-          } else if (idx === 1) { // Bottom-right corner (B or E)
-            offX = 12;
-            offY = 12;
-          } else if (idx === 2) { // Top corner (C or F)
-            offX = -10;
-            offY = -12;
+          if (idx === 0) { offX = -12; offY = 12; }
+          else if (idx === 1) { offX = 12; offY = 12; }
+          else if (idx === 2) { offX = 0; offY = -14; }
+        } else if (poly.length === 4) {
+          if (this.currentShape === 'rhombus') {
+            if (idx === 0) { offX = 0; offY = 14; }
+            else if (idx === 1) { offX = 14; offY = 0; }
+            else if (idx === 2) { offX = 0; offY = -14; }
+            else if (idx === 3) { offX = -14; offY = 0; }
+          } else {
+            if (idx === 0) { offX = -12; offY = 12; }
+            else if (idx === 1) { offX = 12; offY = 12; }
+            else if (idx === 2) { offX = 12; offY = -12; }
+            else if (idx === 3) { offX = -12; offY = -12; }
           }
         }
         this.ctx.fillText(label, screenPt.x + offX, screenPt.y + offY);
@@ -594,31 +861,8 @@ class PlaneLab {
       const s2 = this.toScreen(p2);
       const sMid = { x: (s1.x + s2.x) / 2, y: (s1.y + s2.y) / 2 };
 
-      // Badge dimensions & placement
-      const textMetrics = this.ctx.measureText(dist);
-      const badgeW = Math.max(30, textMetrics.width + 12);
-      const badgeH = 17;
-      const badgeX = sMid.x - badgeW / 2;
-      const badgeY = sMid.y - badgeH / 2;
-
-      // Draw clean white pill badge to cover underlying stroke
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = 1.2;
-
-      if (this.ctx.roundRect) {
-        this.ctx.beginPath();
-        this.ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
-        this.ctx.fill();
-        this.ctx.stroke();
-      } else {
-        this.ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
-        this.ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
-      }
-
-      // Draw number precisely centered in the badge
-      this.ctx.fillStyle = color;
-      this.ctx.fillText(dist, sMid.x, sMid.y);
+      // Draw clean white pill badge
+      this.drawPillBadge(dist, sMid.x, sMid.y, color);
     }
     this.ctx.restore();
   }
@@ -658,7 +902,7 @@ class PlaneLab {
 
       // Determine angle text
       let angleText = '';
-      if (presetAngles && presetAngles[idx]) {
+      if (presetAngles && presetAngles[idx] && Math.abs(this.scaleX - this.scaleY) < 0.001) {
         angleText = presetAngles[idx];
       } else {
         angleText = `${Math.round(deg)}°`;
@@ -667,7 +911,7 @@ class PlaneLab {
       const isRightAngle = Math.abs(deg - 90) < 1.5;
 
       if (isRightAngle) {
-        // Draw standard right-angle marker (square corner) inside the corner
+        // Draw standard right-angle marker
         const s = 14;
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = 1.6;
@@ -677,36 +921,16 @@ class PlaneLab {
         this.ctx.lineTo(sPt.x + v2.x * s, sPt.y + v2.y * s);
         this.ctx.stroke();
 
-        // Place "90°" text cleanly inside along bisector
         const labelDist = 26;
         const lx = sPt.x + bisector.x * labelDist;
         const ly = sPt.y + bisector.y * labelDist;
-
-        this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-
-        const tm = this.ctx.measureText(angleText);
-        const pw = tm.width + 6;
-        const ph = 15;
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        if (this.ctx.roundRect) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(lx - pw / 2, ly - ph / 2, pw, ph, 3);
-          this.ctx.fill();
-        } else {
-          this.ctx.fillRect(lx - pw / 2, ly - ph / 2, pw, ph);
-        }
-
-        this.ctx.fillStyle = '#334155';
-        this.ctx.fillText(angleText, lx, ly);
+        this.drawPillBadge(angleText, lx, ly, color, 'rgba(255, 255, 255, 0.9)', '#334155');
       } else {
         // Draw interior angle arc
         const arcR = 18;
         const ang1 = Math.atan2(v1.y, v1.x);
         const ang2 = Math.atan2(v2.y, v2.x);
         const cross = v1.x * v2.y - v1.y * v2.x;
-        // If cross > 0, angle goes clockwise from ang1 to ang2 in screen space
         const counterClockwise = cross < 0;
 
         this.ctx.strokeStyle = color;
@@ -715,31 +939,137 @@ class PlaneLab {
         this.ctx.arc(sPt.x, sPt.y, arcR, ang1, ang2, counterClockwise);
         this.ctx.stroke();
 
-        // Place angle text along bisector inside the corner
         const labelDist = 30;
         const lx = sPt.x + bisector.x * labelDist;
         const ly = sPt.y + bisector.y * labelDist;
-
-        this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-
-        const tm = this.ctx.measureText(angleText);
-        const pw = tm.width + 6;
-        const ph = 15;
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        if (this.ctx.roundRect) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(lx - pw / 2, ly - ph / 2, pw, ph, 3);
-          this.ctx.fill();
-        } else {
-          this.ctx.fillRect(lx - pw / 2, ly - ph / 2, pw, ph);
-        }
-
-        this.ctx.fillStyle = '#334155';
-        this.ctx.fillText(angleText, lx, ly);
+        this.drawPillBadge(angleText, lx, ly, color, 'rgba(255, 255, 255, 0.9)', '#334155');
       }
     });
+    this.ctx.restore();
+  }
+
+  renderCircle(center, radiusX, radiusY, color, fillColor, label, isTransformed = false) {
+    const sCenter = this.toScreen(center);
+    const sRx = radiusX * this.gridSize;
+    const sRy = radiusY * this.gridSize;
+
+    this.ctx.save();
+    this.ctx.beginPath();
+    this.ctx.ellipse(sCenter.x, sCenter.y, Math.max(1, sRx), Math.max(1, sRy), 0, 0, Math.PI * 2);
+    this.ctx.fillStyle = fillColor;
+    this.ctx.fill();
+    this.ctx.strokeStyle = color;
+    this.ctx.lineWidth = 2.5;
+    this.ctx.stroke();
+
+    // Center point
+    this.ctx.fillStyle = color;
+    this.ctx.beginPath();
+    this.ctx.arc(sCenter.x, sCenter.y, 5, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // Center label
+    if (this.showLabels) {
+      this.ctx.font = 'bold 13px Pretendard, sans-serif';
+      this.ctx.fillStyle = '#0f172a';
+      this.ctx.textAlign = 'right';
+      this.ctx.fillText(label, sCenter.x - 8, sCenter.y - 8);
+    }
+
+    // Radius measurement tool
+    if (this.showLengths) {
+      const isEllipse = Math.abs(radiusX - radiusY) > 0.01;
+      // Horizontal radius line
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = 1.6;
+      this.ctx.setLineDash([3, 3]);
+      this.ctx.beginPath();
+      this.ctx.moveTo(sCenter.x, sCenter.y);
+      this.ctx.lineTo(sCenter.x + sRx, sCenter.y);
+      this.ctx.stroke();
+
+      const badgeX = sCenter.x + sRx / 2;
+      const badgeY = sCenter.y - 12;
+      const rText = isEllipse ? `가로 r_x=${radiusX.toFixed(1)}` : `반지름 r=${radiusX.toFixed(1)}`;
+      this.drawPillBadge(rText, badgeX, badgeY, color);
+
+      if (isEllipse) {
+        // Vertical radius line for ellipse
+        this.ctx.beginPath();
+        this.ctx.moveTo(sCenter.x, sCenter.y);
+        this.ctx.lineTo(sCenter.x, sCenter.y - sRy);
+        this.ctx.stroke();
+        this.drawPillBadge(`세로 r_y=${radiusY.toFixed(1)}`, sCenter.x, sCenter.y - sRy / 2, color);
+      }
+      this.ctx.setLineDash([]);
+    }
+
+    this.ctx.restore();
+  }
+
+  renderCircleOverlayMotion(curCenter, curRadius, isSimilar, targetScale, currentScale) {
+    const shape = PLANE_SHAPES.circle;
+    const t = this.overlayProgress;
+    const sCenter = this.toScreen(curCenter);
+    const sR = curRadius * this.gridSize;
+
+    this.ctx.save();
+
+    // 1. Motion Trail Line from start O to current center
+    if (t > 0.05 && t < 0.98) {
+      const sStart = this.toScreen(shape.baseCenter);
+      this.ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
+      this.ctx.lineWidth = 2;
+      this.ctx.setLineDash([4, 4]);
+      this.ctx.beginPath();
+      this.ctx.moveTo(sStart.x, sStart.y);
+      this.ctx.lineTo(sCenter.x, sCenter.y);
+      this.ctx.stroke();
+      this.ctx.setLineDash([]);
+    }
+
+    // 2. Draw expanding circle
+    this.ctx.beginPath();
+    this.ctx.arc(sCenter.x, sCenter.y, Math.max(1, sR), 0, Math.PI * 2);
+
+    if (t >= 0.99) {
+      if (isSimilar) {
+        this.ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#059669';
+        this.ctx.lineWidth = 3.5;
+        this.ctx.stroke();
+
+        this.ctx.strokeStyle = '#34d399';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+
+        const txt = `✨ 완전히 포개어짐 (원 O ${targetScale.toFixed(1)}배 확대 ≡ 원 O')`;
+        this.drawPillBadge(txt, sCenter.x, sCenter.y, '#059669', '#ecfdf5', '#065f46');
+      } else {
+        this.ctx.fillStyle = 'rgba(2, 132, 199, 0.18)';
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#0284c7';
+        this.ctx.lineWidth = 2.5;
+        this.ctx.setLineDash([6, 4]);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        const txt = `✗ 완전히 포개어지지 않음 (합동 불성립: 타원으로 왜곡)`;
+        this.drawPillBadge(txt, sCenter.x, sCenter.y, '#ef4444', '#fef2f2', '#991b1b');
+      }
+    } else {
+      // In flight
+      this.ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+      this.ctx.fill();
+      this.ctx.strokeStyle = '#059669';
+      this.ctx.lineWidth = 2.5;
+      this.ctx.stroke();
+
+      const txt = `원 O 확대 중: ${currentScale.toFixed(1)}배 🚀`;
+      this.drawPillBadge(txt, sCenter.x, sCenter.y, '#059669', 'rgba(255, 255, 255, 0.95)', '#065f46');
+    }
+
     this.ctx.restore();
   }
 
@@ -771,60 +1101,62 @@ class PlaneLab {
   }
 
   getTransformedPoly() {
-    const originPt = this.basePoly[0]; // A(1, 1)
-    const currentOffsetX = this.transformedOffset.x; // Stationary at (6, 1)
-    const currentOffsetY = this.transformedOffset.y;
+    const shape = PLANE_SHAPES[this.currentShape];
+    if (!shape || shape.type === 'circle') return [];
 
-    return this.basePoly.map((pt, idx) => {
-      const dx = (pt.x - originPt.x) * this.scaleX;
-      const dy = (pt.y - originPt.y) * this.scaleY;
-      const labels = ['D', 'E', 'F'];
+    const refPt = shape.refPoint || shape.basePoly[0];
+    const offset = shape.offset;
+
+    return shape.basePoly.map((pt, idx) => {
+      const dx = (pt.x - refPt.x) * this.scaleX;
+      const dy = (pt.y - refPt.y) * this.scaleY;
+      const label = shape.transLabels[idx] || `P${idx+1}`;
       return {
-        x: originPt.x + currentOffsetX + dx,
-        y: originPt.y + currentOffsetY + dy,
-        label: labels[idx]
+        x: refPt.x + offset.x + dx,
+        y: refPt.y + offset.y + dy,
+        label: label
       };
     });
   }
 
   getExpandingPoly() {
     if (this.overlayProgress < 0.001) return null;
+    const shape = PLANE_SHAPES[this.currentShape];
+    if (!shape || shape.type === 'circle') return null;
 
     const t = this.overlayProgress;
     const isSimilar = Math.abs(this.scaleX - this.scaleY) < 0.001;
-    // In middle-school similarity, we test similarity by enlarging triangle ABC uniformly by factor k.
     const targetScale = isSimilar ? this.scaleX : ((Math.abs(this.scaleX - 1.0) > 0.01) ? this.scaleX : this.scaleY);
     const currentScale = 1.0 + (targetScale - 1.0) * t;
 
-    const originA = this.basePoly[0]; // A(1, 1)
-    const targetOriginD = { x: originA.x + this.transformedOffset.x, y: originA.y + this.transformedOffset.y }; // D(6, 1)
+    const refPt = shape.refPoint || shape.basePoly[0];
+    const targetRef = { x: refPt.x + shape.offset.x, y: refPt.y + shape.offset.y };
 
-    // Current position of vertex A'
-    const curA = {
-      x: originA.x + (targetOriginD.x - originA.x) * t,
-      y: originA.y + (targetOriginD.y - originA.y) * t
+    const curRef = {
+      x: refPt.x + (targetRef.x - refPt.x) * t,
+      y: refPt.y + (targetRef.y - refPt.y) * t
     };
 
-    const labels = ["A'", "B'", "C'"];
-    return this.basePoly.map((pt, idx) => {
-      const dx = (pt.x - originA.x) * currentScale;
-      const dy = (pt.y - originA.y) * currentScale;
+    return shape.basePoly.map((pt, idx) => {
+      const dx = (pt.x - refPt.x) * currentScale;
+      const dy = (pt.y - refPt.y) * currentScale;
       return {
-        x: curA.x + dx,
-        y: curA.y + dy,
-        label: labels[idx]
+        x: curRef.x + dx,
+        y: curRef.y + dy,
+        label: `${pt.label}'`
       };
     });
   }
 
   renderOverlayMotion(expandingPoly, isSimilar, targetScale, currentScale) {
-    if (!expandingPoly) return;
+    if (!expandingPoly || expandingPoly.length === 0) return;
+    const shape = PLANE_SHAPES[this.currentShape];
     const t = this.overlayProgress;
     this.ctx.save();
 
-    // 1. Motion Trail Line from start A to current A'
+    // 1. Motion Trail Line from start refPoint to current refPoint
     if (t > 0.05 && t < 0.98) {
-      const sStart = this.toScreen(this.basePoly[0]);
+      const sStart = this.toScreen(shape.basePoly[0]);
       const sCur = this.toScreen(expandingPoly[0]);
       this.ctx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
       this.ctx.lineWidth = 2;
@@ -836,7 +1168,7 @@ class PlaneLab {
       this.ctx.setLineDash([]);
     }
 
-    // 2. Draw expanding triangle polygon
+    // 2. Draw expanding polygon
     this.ctx.beginPath();
     const first = this.toScreen(expandingPoly[0]);
     this.ctx.moveTo(first.x, first.y);
@@ -846,10 +1178,18 @@ class PlaneLab {
     }
     this.ctx.closePath();
 
+    // Centroid for badge
+    let sumX = 0, sumY = 0;
+    expandingPoly.forEach(p => { sumX += p.x; sumY += p.y; });
+    const midP = { x: sumX / expandingPoly.length, y: sumY / expandingPoly.length };
+    const sMid = this.toScreen(midP);
+
+    const prefix = expandingPoly.length === 4 ? '□' : '△';
+    const baseSym = prefix + shape.basePoly.map(p => p.label).join('');
+    const transSym = prefix + shape.transLabels.join('');
+
     if (t >= 0.99) {
-      // Arrived at DEF
       if (isSimilar) {
-        // Congruent: Glowing green aura & solid match highlight
         this.ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
         this.ctx.fill();
 
@@ -861,38 +1201,10 @@ class PlaneLab {
         this.ctx.lineWidth = 1.5;
         this.ctx.stroke();
 
-        // Center celebration badge
-        const midP = {
-          x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
-          y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
-        };
-        const sMid = this.toScreen(midP);
-
-        this.ctx.font = 'bold 12px Pretendard, sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        const txt = `✨ 완전히 포개어짐 (합동: △ABC ${targetScale.toFixed(1)}배 확대 ≡ △DEF)`;
-        const m = this.ctx.measureText(txt);
-        const bw = m.width + 18;
-        const bh = 26;
-
-        this.ctx.fillStyle = '#ecfdf5';
-        this.ctx.strokeStyle = '#059669';
-        this.ctx.lineWidth = 1.5;
-        if (this.ctx.roundRect) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 6);
-          this.ctx.fill();
-          this.ctx.stroke();
-        } else {
-          this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-          this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-        }
-        this.ctx.fillStyle = '#065f46';
-        this.ctx.fillText(txt, sMid.x, sMid.y);
+        const txt = `✨ 완전히 포개어짐 (합동: ${baseSym} ${targetScale.toFixed(1)}배 확대 ≡ ${transSym})`;
+        this.drawPillBadge(txt, sMid.x, sMid.y, '#059669', '#ecfdf5', '#065f46');
 
         // Matching vertex badges
-        const matchLabels = ["A' ≡ D", "B' ≡ E", "C' ≡ F"];
         expandingPoly.forEach((pt, idx) => {
           const s = this.toScreen(pt);
           this.ctx.fillStyle = '#059669';
@@ -902,12 +1214,10 @@ class PlaneLab {
 
           this.ctx.font = 'bold 12px Pretendard, sans-serif';
           this.ctx.fillStyle = '#065f46';
-          let offX = idx === 0 ? -24 : idx === 1 ? 24 : -20;
-          let offY = idx === 0 ? 16 : idx === 1 ? 16 : -18;
-          this.ctx.fillText(matchLabels[idx], s.x + offX, s.y + offY);
+          const matchLabel = `${pt.label} ≡ ${shape.transLabels[idx]}`;
+          this.ctx.fillText(matchLabel, s.x + (idx % 2 === 0 ? -22 : 22), s.y + (idx < 2 ? 16 : -16));
         });
       } else {
-        // Incongruent (Distorted)
         this.ctx.fillStyle = 'rgba(2, 132, 199, 0.18)';
         this.ctx.fill();
 
@@ -917,88 +1227,28 @@ class PlaneLab {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // Center warning badge
-        const midP = {
-          x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
-          y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
-        };
-        const sMid = this.toScreen(midP);
-
-        this.ctx.font = 'bold 12px Pretendard, sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
         const txt = `✗ 완전히 포개어지지 않음 (합동 불성립: 왜곡)`;
-        const m = this.ctx.measureText(txt);
-        const bw = m.width + 18;
-        const bh = 26;
+        this.drawPillBadge(txt, sMid.x, sMid.y, '#ef4444', '#fef2f2', '#991b1b');
 
-        this.ctx.fillStyle = '#fef2f2';
-        this.ctx.strokeStyle = '#ef4444';
-        this.ctx.lineWidth = 1.5;
-        if (this.ctx.roundRect) {
-          this.ctx.beginPath();
-          this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 6);
-          this.ctx.fill();
-          this.ctx.stroke();
-        } else {
-          this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-          this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-        }
-        this.ctx.fillStyle = '#991b1b';
-        this.ctx.fillText(txt, sMid.x, sMid.y);
-
-        // Labels for expanded vertices
         expandingPoly.forEach((pt) => {
           const s = this.toScreen(pt);
           this.ctx.fillStyle = '#0284c7';
           this.ctx.beginPath();
           this.ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
           this.ctx.fill();
-
-          this.ctx.font = 'bold 11px Pretendard, sans-serif';
-          this.ctx.fillStyle = '#0284c7';
-          this.ctx.fillText(`확대된 꼭짓점 ${pt.label}`, s.x + 16, s.y - 10);
         });
       }
     } else {
-      // In flight: expanding and gliding
+      // In flight
       this.ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
       this.ctx.fill();
       this.ctx.strokeStyle = '#059669';
       this.ctx.lineWidth = 2.5;
       this.ctx.stroke();
 
-      // Floating live progress badge inside moving triangle
-      const midP = {
-        x: (expandingPoly[0].x + expandingPoly[1].x + expandingPoly[2].x) / 3,
-        y: (expandingPoly[0].y + expandingPoly[1].y + expandingPoly[2].y) / 3
-      };
-      const sMid = this.toScreen(midP);
+      const txt = `${baseSym} 확대 중: ${currentScale.toFixed(1)}배 🚀`;
+      this.drawPillBadge(txt, sMid.x, sMid.y, '#059669', 'rgba(255, 255, 255, 0.95)', '#065f46');
 
-      this.ctx.font = 'bold 11px Pretendard, sans-serif';
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'middle';
-      const txt = `△ABC 확대 중: ${currentScale.toFixed(1)}배 🚀`;
-      const m = this.ctx.measureText(txt);
-      const bw = m.width + 16;
-      const bh = 22;
-
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      this.ctx.strokeStyle = '#059669';
-      this.ctx.lineWidth = 1.2;
-      if (this.ctx.roundRect) {
-        this.ctx.beginPath();
-        this.ctx.roundRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh, 5);
-        this.ctx.fill();
-        this.ctx.stroke();
-      } else {
-        this.ctx.fillRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-        this.ctx.strokeRect(sMid.x - bw / 2, sMid.y - bh / 2, bw, bh);
-      }
-      this.ctx.fillStyle = '#065f46';
-      this.ctx.fillText(txt, sMid.x, sMid.y);
-
-      // Moving vertices
       expandingPoly.forEach((pt) => {
         const s = this.toScreen(pt);
         this.ctx.fillStyle = '#059669';
@@ -1015,9 +1265,14 @@ class PlaneLab {
     this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     this.drawGrid();
 
+    const shape = PLANE_SHAPES[this.currentShape] || PLANE_SHAPES.right_triangle;
     const isSimilar = Math.abs(this.scaleX - this.scaleY) < 0.001;
     const targetScale = isSimilar ? this.scaleX : ((Math.abs(this.scaleX - 1.0) > 0.01) ? this.scaleX : this.scaleY);
     const currentScale = 1.0 + (targetScale - 1.0) * this.overlayProgress;
+
+    const prefix = shape.type === 'circle' ? '' : (shape.basePoly.length === 4 ? '□' : '△');
+    const baseName = shape.type === 'circle' ? '원 O' : (prefix + shape.basePoly.map(p => p.label).join(''));
+    const transName = shape.type === 'circle' ? "원 O'" : (prefix + shape.transLabels.join(''));
 
     // Top Status Banner during Overlay
     if (this.overlayProgress > 0.01) {
@@ -1028,7 +1283,7 @@ class PlaneLab {
           this.ctx.strokeStyle = '#10b981';
           this.ctx.lineWidth = 1.2;
           this.ctx.beginPath();
-          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 490, 30, 6) : this.ctx.rect(15, 12, 490, 30);
+          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 530, 30, 6) : this.ctx.rect(15, 12, 530, 30);
           this.ctx.fill();
           this.ctx.stroke();
 
@@ -1036,13 +1291,13 @@ class PlaneLab {
           this.ctx.fillStyle = '#065f46';
           this.ctx.textAlign = 'left';
           this.ctx.textBaseline = 'middle';
-          this.ctx.fillText(`🎉 [합동 확인 완료] △ABC를 ${targetScale.toFixed(1)}배 확대했더니 △DEF와 완전히 포개어집니다! (합동 성립 ➜ 닮음)`, 25, 27);
+          this.ctx.fillText(`🎉 [합동 확인 완료] ${baseName}를 ${targetScale.toFixed(1)}배 확대했더니 ${transName}와 완전히 포개어집니다! (합동 성립 ➜ 닮음)`, 25, 27);
         } else {
           this.ctx.fillStyle = '#fef2f2';
           this.ctx.strokeStyle = '#ef4444';
           this.ctx.lineWidth = 1.2;
           this.ctx.beginPath();
-          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 520, 30, 6) : this.ctx.rect(15, 12, 520, 30);
+          this.ctx.roundRect ? this.ctx.roundRect(15, 12, 550, 30, 6) : this.ctx.rect(15, 12, 550, 30);
           this.ctx.fill();
           this.ctx.stroke();
 
@@ -1050,14 +1305,14 @@ class PlaneLab {
           this.ctx.fillStyle = '#991b1b';
           this.ctx.textAlign = 'left';
           this.ctx.textBaseline = 'middle';
-          this.ctx.fillText(`⚠️ [합동 불성립] △ABC를 ${targetScale.toFixed(1)}배 확대해도 △DEF와 완전히 포개어지지 않습니다! (비율 왜곡 ➜ 닮음 아님)`, 25, 27);
+          this.ctx.fillText(`⚠️ [합동 불성립] ${baseName}를 ${targetScale.toFixed(1)}배 확대해도 ${transName}와 완전히 포개어지지 않습니다! (비율 왜곡 ➜ 닮음 아님)`, 25, 27);
         }
       } else {
         this.ctx.fillStyle = '#eff6ff';
         this.ctx.strokeStyle = '#3b82f6';
         this.ctx.lineWidth = 1.2;
         this.ctx.beginPath();
-        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 440, 30, 6) : this.ctx.rect(15, 12, 440, 30);
+        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 480, 30, 6) : this.ctx.rect(15, 12, 480, 30);
         this.ctx.fill();
         this.ctx.stroke();
 
@@ -1065,77 +1320,116 @@ class PlaneLab {
         this.ctx.fillStyle = '#1d4ed8';
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(`🚀 삼각형 ABC가 ${targetScale.toFixed(1)}배로 점차 확대되면서 △DEF로 이동 중...`, 25, 27);
+        this.ctx.fillText(`🚀 ${baseName}가 ${targetScale.toFixed(1)}배로 점차 확대되면서 ${transName}로 이동 중...`, 25, 27);
       }
       this.ctx.restore();
     }
 
-    // 1. Draw Reference Base Polygon ABC (Green)
-    const baseAngles = ['90°', '53°', '37°'];
-    if (this.overlayProgress > 0.01) {
-      // While expanding/overlaying, show original base ABC with subtle watermark styling
-      this.ctx.save();
-      this.renderPolygon(this.basePoly, 'rgba(5, 150, 105, 0.45)', 'rgba(16, 185, 129, 0.08)', '', baseAngles);
-      const sA = this.toScreen(this.basePoly[0]);
-      this.ctx.font = 'bold 10px Pretendard, sans-serif';
-      this.ctx.fillStyle = '#059669';
-      this.ctx.textAlign = 'center';
-      this.ctx.fillText('기준 △ABC (1.0배)', sA.x + 40, sA.y + 22);
-      this.ctx.restore();
-    } else {
-      this.renderPolygon(this.basePoly, '#059669', 'rgba(16, 185, 129, 0.2)', '', baseAngles);
-    }
+    if (shape.type === 'circle') {
+      // ---------------- Circle Rendering ----------------
+      const baseCenter = shape.baseCenter;
+      const baseR = shape.baseRadius;
+      const transCenter = { x: baseCenter.x + shape.offset.x, y: baseCenter.y + shape.offset.y };
+      const transRx = baseR * this.scaleX;
+      const transRy = baseR * this.scaleY;
 
-    if (this.currentTabMode === 'explore') {
-      // 2. Explore Mode: Draw Transformed Polygon DEF (Stationary)
-      const transformedPoly = this.getTransformedPoly();
-      const transColor = isSimilar ? '#4f46e5' : '#ef4444';
-      const transFill = isSimilar ? 'rgba(79, 70, 229, 0.15)' : 'rgba(239, 68, 68, 0.12)';
-      const transAngles = isSimilar ? ['90°', '53°', '37°'] : null;
-      this.renderPolygon(transformedPoly, transColor, transFill, '', transAngles);
-      this.updateAnalysisPanel(isSimilar);
-
-      // 3. Draw Expanding Triangle A'B'C' during Overlay Motion
-      if (this.overlayProgress > 0.001) {
-        const expandingPoly = this.getExpandingPoly();
-        this.renderOverlayMotion(expandingPoly, isSimilar, targetScale, currentScale);
-      }
-    } else {
-      // 3. Draw Mode: Draw Student's Polygon
-      if (this.drawnPoints.length > 0) {
-        this.renderPolygon(this.drawnPoints, '#4f46e5', 'rgba(79, 70, 229, 0.2)', '');
+      // 1. Base Circle
+      if (this.overlayProgress > 0.01) {
+        this.renderCircle(baseCenter, baseR, baseR, 'rgba(5, 150, 105, 0.45)', 'rgba(16, 185, 129, 0.08)', 'O');
+      } else {
+        this.renderCircle(baseCenter, baseR, baseR, '#059669', 'rgba(16, 185, 129, 0.2)', 'O');
       }
 
-      // Draw hover snap circle indicator
-      if (this.hoverGridPt && this.drawnPoints.length < 3) {
-        const sPt = this.toScreen(this.hoverGridPt);
-        this.ctx.beginPath();
-        this.ctx.arc(sPt.x, sPt.y, 7, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(79, 70, 229, 0.5)';
-        this.ctx.fill();
-        this.ctx.strokeStyle = '#4f46e5';
-        this.ctx.stroke();
+      if (this.currentTabMode === 'explore') {
+        // 2. Transformed Circle / Ellipse
+        const transColor = isSimilar ? '#4f46e5' : '#ef4444';
+        const transFill = isSimilar ? 'rgba(79, 70, 229, 0.15)' : 'rgba(239, 68, 68, 0.12)';
+        this.renderCircle(transCenter, transRx, transRy, transColor, transFill, "O'", true);
+        this.updateAnalysisPanel(isSimilar);
 
-        this.ctx.font = '11px sans-serif';
-        this.ctx.fillStyle = '#4f46e5';
-        this.ctx.fillText(`(${this.hoverGridPt.x}, ${this.hoverGridPt.y})`, sPt.x + 10, sPt.y - 10);
+        // 3. Circle Overlay Motion
+        if (this.overlayProgress > 0.001) {
+          const curCenter = {
+            x: baseCenter.x + (transCenter.x - baseCenter.x) * this.overlayProgress,
+            y: baseCenter.y + (transCenter.y - baseCenter.y) * this.overlayProgress
+          };
+          const curR = baseR + (baseR * targetScale - baseR) * this.overlayProgress;
+          this.renderCircleOverlayMotion(curCenter, curR, isSimilar, targetScale, currentScale);
+        }
+      }
+    } else {
+      // ---------------- Polygon Rendering ----------------
+      const baseAngles = shape.angles || null;
+      if (this.overlayProgress > 0.01) {
+        this.ctx.save();
+        this.renderPolygon(shape.basePoly, 'rgba(5, 150, 105, 0.45)', 'rgba(16, 185, 129, 0.08)', '', baseAngles);
+        const sA = this.toScreen(shape.basePoly[0]);
+        this.ctx.font = 'bold 10px Pretendard, sans-serif';
+        this.ctx.fillStyle = '#059669';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`기준 ${baseName} (1.0배)`, sA.x + 35, sA.y + 22);
+        this.ctx.restore();
+      } else {
+        this.renderPolygon(shape.basePoly, '#059669', 'rgba(16, 185, 129, 0.2)', '', baseAngles);
+      }
+
+      if (this.currentTabMode === 'explore') {
+        // 2. Transformed Polygon
+        const transformedPoly = this.getTransformedPoly();
+        const transColor = isSimilar ? '#4f46e5' : '#ef4444';
+        const transFill = isSimilar ? 'rgba(79, 70, 229, 0.15)' : 'rgba(239, 68, 68, 0.12)';
+        const transAngles = isSimilar ? baseAngles : null;
+        this.renderPolygon(transformedPoly, transColor, transFill, '', transAngles);
+        this.updateAnalysisPanel(isSimilar);
+
+        // 3. Overlay Motion
+        if (this.overlayProgress > 0.001) {
+          const expandingPoly = this.getExpandingPoly();
+          this.renderOverlayMotion(expandingPoly, isSimilar, targetScale, currentScale);
+        }
+      } else {
+        // Draw Mode
+        if (this.drawnPoints.length > 0) {
+          this.renderPolygon(this.drawnPoints, '#4f46e5', 'rgba(79, 70, 229, 0.2)', '');
+        }
+
+        if (this.hoverGridPt && this.drawnPoints.length < (shape.basePoly ? shape.basePoly.length : 3)) {
+          const sPt = this.toScreen(this.hoverGridPt);
+          this.ctx.beginPath();
+          this.ctx.arc(sPt.x, sPt.y, 7, 0, Math.PI * 2);
+          this.ctx.fillStyle = 'rgba(79, 70, 229, 0.5)';
+          this.ctx.fill();
+          this.ctx.strokeStyle = '#4f46e5';
+          this.ctx.stroke();
+
+          this.ctx.font = '11px sans-serif';
+          this.ctx.fillStyle = '#4f46e5';
+          this.ctx.fillText(`(${this.hoverGridPt.x}, ${this.hoverGridPt.y})`, sPt.x + 10, sPt.y - 10);
+        }
       }
     }
   }
 
   updateAnalysisPanel(isSimilar) {
+    const shape = PLANE_SHAPES[this.currentShape] || PLANE_SHAPES.right_triangle;
     const badge = document.getElementById('planeSimilarityBadge');
     const detailBox = document.getElementById('planeAnalysisDetail');
     const scaleRatioText = document.getElementById('planeScaleRatioText');
+    const badgeAlways = document.getElementById('badgeAlwaysSimilarTag');
+    const explainAlways = document.getElementById('alwaysSimilarExplanation');
 
     if (scaleRatioText) {
       scaleRatioText.textContent = `가로: ${this.scaleX.toFixed(1)}배, 세로: ${this.scaleY.toFixed(1)}배`;
     }
 
+    const prefix = shape.type === 'circle' ? '' : (shape.basePoly.length === 4 ? '□' : '△');
+    const baseName = shape.type === 'circle' ? '원 O' : (prefix + shape.basePoly.map(p => p.label).join(''));
+    const transName = shape.type === 'circle' ? "원 O'" : (prefix + shape.transLabels.join(''));
+
     if (badge) {
       if (isSimilar) {
         badge.className = 'badge-similarity yes';
-        badge.innerHTML = `✓ 닮음 관계 성립 (△ABC ∽ △DEF)`;
+        badge.innerHTML = `✓ 닮음 관계 성립 (${baseName} ∽ ${transName})`;
       } else {
         badge.className = 'badge-similarity no';
         badge.innerHTML = `✗ 닮음 아님 (가로·세로 비율 왜곡)`;
@@ -1143,19 +1437,58 @@ class PlaneLab {
     }
 
     if (detailBox) {
-      if (isSimilar) {
-        detailBox.innerHTML = `
-          <div class="data-row"><span>대응변의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (모두 일정)</b></div>
-          <div class="data-row"><span>대응각의 크기:</span> <b>90°, 53°, 37° (불변)</b></div>
-          <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
-        `;
+      if (shape.type === 'circle') {
+        if (isSimilar) {
+          detailBox.innerHTML = `
+            <div class="data-row"><span>대응 반지름의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (일정)</b></div>
+            <div class="data-row"><span>도형 형태:</span> <b>완전한 원형 유지 (중심각 360°)</b></div>
+            <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
+          `;
+        } else {
+          detailBox.innerHTML = `
+            <div class="data-row"><span>가로 반지름 배율:</span> <b>${this.scaleX.toFixed(1)}배</b></div>
+            <div class="data-row"><span>세로 반지름 배율:</span> <b>${this.scaleY.toFixed(1)}배</b></div>
+            <div class="data-row" style="color: #dc2626;"><span>도형 왜곡:</span> <b>원이 타원으로 찌그러짐!</b></div>
+          `;
+        }
       } else {
-        detailBox.innerHTML = `
-          <div class="data-row"><span>가로(밑변) 배율:</span> <b>${this.scaleX.toFixed(1)}배</b></div>
-          <div class="data-row"><span>세로(높이) 배율:</span> <b>${this.scaleY.toFixed(1)}배</b></div>
-          <div class="data-row" style="color: #dc2626;"><span>각도 변화:</span> <b>예각의 크기가 달라짐!</b></div>
-        `;
+        if (isSimilar) {
+          const anglesStr = shape.angles ? shape.angles.join(', ') : '불변';
+          detailBox.innerHTML = `
+            <div class="data-row"><span>대응변의 비:</span> <b>1 : ${this.scaleX.toFixed(1)} (모두 일정)</b></div>
+            <div class="data-row"><span>대응각의 크기:</span> <b>${anglesStr} (각각 같음)</b></div>
+            <div class="data-row"><span>닮음비:</span> <b>1 : ${this.scaleX.toFixed(1)}</b></div>
+          `;
+        } else {
+          detailBox.innerHTML = `
+            <div class="data-row"><span>가로 배율:</span> <b>${this.scaleX.toFixed(1)}배</b></div>
+            <div class="data-row"><span>세로 배율:</span> <b>${this.scaleY.toFixed(1)}배</b></div>
+            <div class="data-row" style="color: #dc2626;"><span>각도 변화:</span> <b>대응각의 크기가 달라짐! (왜곡)</b></div>
+          `;
+        }
       }
+    }
+
+    // Update 생각 넓히기 교과서 판정 및 핵심 이유
+    if (badgeAlways) {
+      if (shape.isAlwaysSimilar) {
+        badgeAlways.textContent = '★ 항상 서로 닮은 도형: O (항상 닮음)';
+        badgeAlways.style.background = '#ecfdf5';
+        badgeAlways.style.color = '#047857';
+        badgeAlways.style.borderColor = '#a7f3d0';
+      } else {
+        badgeAlways.textContent = '⚠️ 항상 서로 닮은 도형: X (항상 닮음은 아님)';
+        badgeAlways.style.background = '#fef2f2';
+        badgeAlways.style.color = '#dc2626';
+        badgeAlways.style.borderColor = '#fecaca';
+      }
+    }
+
+    if (explainAlways) {
+      explainAlways.innerHTML = `
+        <b>[교과서 핵심 이유]</b> ${shape.reason}<br>
+        <span style="color:#4f46e5; font-size:0.75rem; display:inline-block; margin-top:0.3rem;">🔍 <b>탐구 팁:</b> ${shape.hint}</span>
+      `;
     }
   }
 
@@ -1194,18 +1527,18 @@ class PlaneLab {
 
     const checkInput = () => {
       const raw = input.value.trim();
+      const shape = PLANE_SHAPES[this.currentShape] || PLANE_SHAPES.right_triangle;
+
       if (!raw) {
-        this.showSimFeedback('error', '⚠️ 닮음 기호 표현을 입력해주세요! (예: △ABC ∽ △DEF)');
+        this.showSimFeedback('error', '⚠️ 닮음 기호 표현을 입력해주세요! (예: ' + shape.expectedSim + ')');
         return;
       }
 
-      // Check if user typed "=" or "≡"
       if (raw.includes('=') || raw.includes('≡')) {
-        this.showSimFeedback('info', '💡 기호 <b>=</b> 나 <b>≡</b> 은 크기까지 모두 같은 \'합동\'에 가깝습니다. 닮음에는 <b>닮음 기호(∽)</b>를 사용해야 합니다. (예: △ABC ∽ △DEF)');
+        this.showSimFeedback('info', '💡 기호 <b>=</b> 나 <b>≡</b> 은 크기까지 모두 같은 \'합동\'에 가깝습니다. 닮음에는 <b>닮음 기호(∽)</b>를 사용해야 합니다.');
         return;
       }
 
-      // Standardize similarity symbol
       const standardized = raw.replace(/[~∼∿sS]/g, '∽');
 
       if (!standardized.includes('∽')) {
@@ -1215,61 +1548,63 @@ class PlaneLab {
 
       const parts = standardized.split('∽').map(s => s.trim());
       if (parts.length !== 2) {
-        this.showSimFeedback('error', '⚠️ 두 삼각형 사이에 닮음 기호 <b>∽</b> 를 하나만 넣어주세요. (예: △ABC ∽ △DEF)');
+        this.showSimFeedback('error', '⚠️ 닮음 기호 <b>∽</b> 는 두 도형 사이에 하나만 넣어주세요.');
         return;
       }
 
-      // Extract letters only (remove △, 삼각형, whitespace)
-      const cleanLetters = (str) => str.replace(/[^A-Za-z가-힣]/g, '').toUpperCase();
+      // Handle circle
+      if (shape.type === 'circle') {
+        if (standardized.includes('O') && standardized.includes("O'")) {
+          this.showSimFeedback('success', `
+            🎉 <b>정답입니다! 참 잘했어요!</b><br>
+            원 O와 원 O'의 닮음 관계를 올바르게 나타냈습니다.<br>
+            <span style="display:inline-block; margin-top:0.25rem; font-weight:800; color:#059669; font-size:0.95rem;">
+              ✓ 원 O ∽ 원 O'
+            </span><br>
+            모든 원은 모양이 일정하고 반지름의 비에 의해서만 크기가 결정되므로 <b>항상 서로 닮은 도형</b>입니다!
+          `);
+        } else {
+          this.showSimFeedback('info', "💡 원의 기호는 <b>원 O ∽ 원 O'</b> 또는 <b>⊙O ∽ ⊙O'</b> 와 같이 적어보세요!");
+        }
+        return;
+      }
+
+      // Handle polygons (3 or 4 vertices)
+      const cleanLetters = (str) => str.replace(/[^A-Za-z]/g, '').toUpperCase();
       const leftLetters = cleanLetters(parts[0]);
       const rightLetters = cleanLetters(parts[1]);
+      const targetLen = shape.basePoly.length;
 
-      if (leftLetters.length !== 3 || rightLetters.length !== 3) {
-        this.showSimFeedback('error', `⚠️ 삼각형의 꼭짓점 3개를 각각 정확히 적어주세요. (입력됨: ${leftLetters || '없음'} ∽ ${rightLetters || '없음'})`);
+      if (leftLetters.length !== targetLen || rightLetters.length !== targetLen) {
+        this.showSimFeedback('error', `⚠️ 도형의 꼭짓점 ${targetLen}개를 각각 정확히 적어주세요. (입력됨: ${leftLetters || '없음'} ∽ ${rightLetters || '없음'})`);
         return;
       }
 
-      // Valid correspondence mapping:
-      // A(1, 1) right-angle corresponds to D(right-angle)
-      // B(4, 1) horizontal side corresponds to E
-      // C(1, 5) vertical side corresponds to F
-      const corrMap = { 'A': 'D', 'B': 'E', 'C': 'F' };
-
-      const c1 = corrMap[leftLetters[0]];
-      const c2 = corrMap[leftLetters[1]];
-      const c3 = corrMap[leftLetters[2]];
-
-      if (!c1 || !c2 || !c3) {
-        this.showSimFeedback('error', '⚠️ 원래 삼각형은 A, B, C이고, 확대된 삼각형은 D, E, F입니다. 알파벳을 확인해주세요.');
-        return;
+      // Correspondence mapping
+      let corrMap = {};
+      if (targetLen === 3) {
+        corrMap = { 'A': 'D', 'B': 'E', 'C': 'F' };
+      } else if (targetLen === 4) {
+        corrMap = { 'A': 'E', 'B': 'F', 'C': 'G', 'D': 'H' };
       }
 
-      const expectedRight = c1 + c2 + c3;
+      const expectedRight = leftLetters.split('').map(ch => corrMap[ch]).join('');
+      const prefix = targetLen === 4 ? '□' : '△';
 
       if (rightLetters === expectedRight) {
-        // Perfect correspondence!
         this.showSimFeedback('success', `
           🎉 <b>정답입니다! 참 잘했어요!</b><br>
-          대응하는 꼭짓점의 순서(<b>A↔D, B↔E, C↔F</b>)를 완벽히 맞추어 표현했습니다.<br>
+          대응하는 꼭짓점의 순서를 완벽히 맞추어 표현했습니다.<br>
           <span style="display:inline-block; margin-top:0.25rem; font-weight:800; color:#059669; font-size:0.95rem;">
-            ✓ △${leftLetters} ∽ △${rightLetters}
+            ✓ ${prefix}${leftLetters} ∽ ${prefix}${rightLetters}
           </span>
         `);
       } else {
-        // Correspondence mismatch! Analyze what went wrong and provide exact guidance
-        let detailMsg = '';
-        if (leftLetters === 'ABC' && rightLetters === 'DFE') {
-          detailMsg = '점 B(밑변 3)의 대응점은 <b>E</b>이고, 점 C(높이 4)의 대응점은 <b>F</b>입니다. E와 F의 순서가 바뀌었습니다!';
-        } else if (leftLetters === 'ABC' && rightLetters === 'FED') {
-          detailMsg = '점 A(직각 꼭짓점)의 대응점은 <b>D</b>입니다. 첫 번째 꼭짓점부터 순서를 맞춰야 합니다.';
-        } else {
-          detailMsg = `각 꼭짓점의 대응점은 <b>${leftLetters[0]} ↔ ${c1}</b>, <b>${leftLetters[1]} ↔ ${c2}</b>, <b>${leftLetters[2]} ↔ ${c3}</b> 입니다.`;
-        }
-
+        const corrPairs = leftLetters.split('').map(ch => `<b>${ch} ↔ ${corrMap[ch] || '?'}</b>`).join(', ');
         this.showSimFeedback('error', `
           ❌ <b>대응점의 순서가 맞지 않습니다!</b><br>
-          ${detailMsg}<br>
-          👉 올바른 표현: <b>△${leftLetters} ∽ △${expectedRight}</b> 로 고쳐 써보세요!
+          대응점 쌍: ${corrPairs} 입니다.<br>
+          👉 올바른 표현: <b>${prefix}${leftLetters} ∽ ${prefix}${expectedRight}</b> 로 고쳐 써보세요!
         `);
       }
     };
@@ -1286,6 +1621,128 @@ class PlaneLab {
     feedback.className = `feedback-alert ${type}`;
     feedback.innerHTML = html;
     feedback.style.display = 'block';
+  }
+
+  /* ---------------- Property Quiz: 평면도형에서 닮음의 성질 빈칸넣기 ---------------- */
+  setupPropertyQuiz() {
+    const b1 = document.getElementById('quizPlaneBlank1');
+    const b2 = document.getElementById('quizPlaneBlank2');
+    const b3 = document.getElementById('quizPlaneBlank3');
+    const btnCheck = document.getElementById('btnCheckPlaneQuiz');
+    const btnClear = document.getElementById('btnClearPlaneQuiz');
+    const feedback = document.getElementById('planeQuizFeedback');
+    const chips = document.querySelectorAll('.chip-plane-word');
+
+    if (!b1 || !b2 || !b3 || !btnCheck) return;
+
+    let activeBlank = b1;
+
+    [b1, b2, b3].forEach(blank => {
+      blank.addEventListener('focus', () => {
+        activeBlank = blank;
+      });
+      blank.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') checkAnswers();
+      });
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const word = chip.dataset.word;
+        if (!word) return;
+        let target = activeBlank;
+        if (target.value.trim() !== '') {
+          const empty = [b1, b2, b3].find(b => b.value.trim() === '');
+          if (empty) target = empty;
+        }
+        target.value = word;
+        const nextEmpty = [b1, b2, b3].find(b => b.value.trim() === '');
+        if (nextEmpty) {
+          activeBlank = nextEmpty;
+          nextEmpty.focus();
+        } else {
+          target.focus();
+        }
+      });
+    });
+
+    const checkAnswers = () => {
+      const v1 = b1.value.trim().replace(/\s+/g, '');
+      const v2 = b2.value.trim().replace(/\s+/g, '');
+      const v3 = b3.value.trim().replace(/\s+/g, '');
+
+      if (!v1 && !v2 && !v3) {
+        if (feedback) {
+          feedback.className = 'feedback-alert error';
+          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 먼저 입력하거나 아래 [보기 낱말]을 클릭해보세요!';
+          feedback.style.display = 'block';
+        }
+        return;
+      }
+
+      const c1 = (v1 === '대응변');
+      const c2 = (v2 === '비');
+      const c3 = (v3 === '대응각');
+
+      const styleInput = (el, isCorrect) => {
+        if (isCorrect) {
+          el.style.borderColor = '#10b981';
+          el.style.background = '#ecfdf5';
+          el.style.color = '#047857';
+        } else {
+          el.style.borderColor = '#ef4444';
+          el.style.background = '#fef2f2';
+          el.style.color = '#b91c1c';
+        }
+      };
+
+      styleInput(b1, c1);
+      styleInput(b2, c2);
+      styleInput(b3, c3);
+
+      if (!feedback) return;
+
+      if (c1 && c2 && c3) {
+        feedback.className = 'feedback-alert success';
+        feedback.innerHTML = `
+          🎉 <b>정답입니다! 참 잘했어요!</b><br>
+          평면도형에서 닮음의 두 가지 핵심 성질을 완벽히 정리했습니다.<br>
+          <div style="margin-top: 0.35rem; padding: 0.5rem; background: #ffffff; border-radius: 4px; border-left: 3px solid #10b981; line-height: 1.6;">
+            <b>1</b> <b>대응변</b>의 길이의 <b>비</b>는 일정하다.<br>
+            <b>2</b> <b>대응각</b>의 크기는 각각 같다.
+          </div>
+        `;
+        feedback.style.display = 'block';
+      } else {
+        let hints = [];
+        if (!c1) hints.push('• <b>1번 첫 번째 빈칸</b>: 마주보는 변의 쌍을 뜻하는 단어를 넣어보세요. (힌트: <b>대응변</b>)');
+        if (!c2) hints.push('• <b>1번 두 번째 빈칸</b>: 길이의 비율 관계를 뜻하는 한 글자 낱말입니다. (힌트: <b>비</b>)');
+        if (!c3) hints.push('• <b>2번 빈칸</b>: 크기가 변하지 않고 서로 같은 각의 쌍입니다. (힌트: <b>대응각</b>)');
+
+        feedback.className = 'feedback-alert error';
+        feedback.innerHTML = `
+          ❌ <b>틀린 빈칸이 있습니다! 아래 힌트를 확인해보세요.</b><br>
+          ${hints.join('<br>')}
+        `;
+        feedback.style.display = 'block';
+      }
+    };
+
+    btnCheck.addEventListener('click', checkAnswers);
+
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        [b1, b2, b3].forEach(b => {
+          b.value = '';
+          b.style.borderColor = '#cbd5e1';
+          b.style.background = '#ffffff';
+          b.style.color = 'var(--primary)';
+        });
+        if (feedback) feedback.style.display = 'none';
+        activeBlank = b1;
+        b1.focus();
+      });
+    }
   }
 }
 

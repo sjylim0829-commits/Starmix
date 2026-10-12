@@ -229,9 +229,9 @@
         <div class="viewport-card">
           <div class="viewport-toolbar">
             <div class="toolbar-group">
-              <span>📍 기준 도형: <b style="color: #059669;">△ABC (밑변 3, 높이 4)</b></span>
+              <span>📍 기준 도형: <b id="planeBaseShapeName" style="color: #059669;">△ABC (밑변 3, 높이 4)</b></span>
               <span style="margin: 0 0.2rem; color: #cbd5e1;">|</span>
-              <span>확대 도형: <b style="color: #4f46e5;">△DEF</b></span>
+              <span>확대 도형: <b id="planeTransShapeName" style="color: #4f46e5;">△DEF</b></span>
             </div>
 
             <!-- Measurement Tool Chips -->
@@ -252,13 +252,32 @@
           </div>
 
           <div class="canvas-container">
-            <div class="canvas-hint">💡 모눈 위에서 삼각형의 각도와 변의 길이가 어떻게 변하는지 관찰해보세요.</div>
+            <div class="canvas-hint" id="planeCanvasHint">💡 모눈 위에서 도형의 각도와 변의 길이가 어떻게 변하는지 관찰해보세요.</div>
             <canvas id="planeCanvas"></canvas>
           </div>
         </div>
 
         <!-- Right Control Sidebar -->
         <aside class="control-sidebar">
+
+          <!-- 생각 넓히기: 탐구 대상 도형 선택 -->
+          <div class="card" id="cardPlaneShapeSelect">
+            <div class="card-title">
+              <span>🔍 생각 넓히기: 탐구 대상 도형</span>
+              <span class="grade-badge" style="background: #eff6ff; color: #2563eb; border-color: #bfdbfe;">교과서 6종 도형</span>
+            </div>
+            <div style="font-size: 0.77rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.35;">
+              교과서 <b>[생각 넓히기]</b> 속 도형들을 직접 선택해 닮음 성질을 관찰해보세요!
+            </div>
+            <div class="plane-shape-grid">
+              <button type="button" class="btn btn-primary btn-xs plane-shape-btn active" data-shape="right_triangle">📐 직각삼각형</button>
+              <button type="button" class="btn btn-secondary btn-xs plane-shape-btn" data-shape="isosceles">🔺 이등변삼각형</button>
+              <button type="button" class="btn btn-secondary btn-xs plane-shape-btn" data-shape="equilateral">🔺 정삼각형</button>
+              <button type="button" class="btn btn-secondary btn-xs plane-shape-btn" data-shape="rhombus">🔷 마름모</button>
+              <button type="button" class="btn btn-secondary btn-xs plane-shape-btn" data-shape="square">🟩 정사각형</button>
+              <button type="button" class="btn btn-secondary btn-xs plane-shape-btn" data-shape="circle">⚪ 원</button>
+            </div>
+          </div>
 
           <!-- Sub-mode Selector -->
           <div class="card">
@@ -327,7 +346,7 @@
             </div>
           </div>
 
-          <!-- Similarity Analysis Result -->
+          <!-- Similarity Analysis Result & 생각 넓히기 판정 -->
           <div class="card">
             <div class="card-title">
               <span>수학적 분석 & 닮음 판정</span>
@@ -341,6 +360,68 @@
               <div class="data-row"><span>대응각의 크기:</span> <b>90°, 53°, 37° (불변)</b></div>
               <div class="data-row"><span>닮음비:</span> <b>1 : 2.0</b></div>
             </div>
+
+            <!-- 교과서 [생각 넓히기] 판정 및 핵심 이유 -->
+            <div id="cardAlwaysSimilarAnalysis" style="margin-top: 0.65rem; border-top: 1px dashed var(--border-color); padding-top: 0.55rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">💡 [생각 넓히기] 판정:</span>
+                <span id="badgeAlwaysSimilarTag" class="grade-badge" style="background: #fef2f2; color: #dc2626; border-color: #fecaca; font-size: 0.72rem;">⚠️ 항상 닮음은 아님</span>
+              </div>
+              <div id="alwaysSimilarExplanation" style="font-size: 0.77rem; line-height: 1.45; color: var(--text-muted); background: #f8fafc; padding: 0.45rem 0.6rem; border-radius: 4px; border-left: 3px solid #cbd5e1;">
+                한 각이 90°(직각)이더라도 나머지 두 예각의 크기나 변의 비가 다르면 닮음이 아닙니다.
+              </div>
+            </div>
+          </div>
+
+          <!-- 평면도형에서 닮음의 성질 빈칸넣기 퀴즈 -->
+          <div class="card" id="cardPlanePropertyQuiz">
+            <div class="card-title">
+              <span>📖 평면도형에서 닮음의 성질</span>
+              <span class="grade-badge" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">개념 빈칸 퀴즈</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.55rem; line-height: 1.4;">
+              탐구 활동을 통해 관찰한 <b>평면도형에서 닮음의 성질</b>을 빈칸에 알맞은 단어를 넣어 완성해보세요!
+            </div>
+
+            <div style="background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 0.7rem 0.75rem; margin-bottom: 0.55rem; font-size: 0.85rem; line-height: 2.1;">
+              <div style="font-weight: 700; color: #047857; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.3rem;">
+                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #047857;"></span>
+                <span>서로 닮은 두 평면도형에서</span>
+              </div>
+              
+              <!-- 1 대응변의 길이의 비는 일정하다. -->
+              <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
+                <b style="color: #ea580c; font-size: 0.95rem;">1</b>
+                <input type="text" id="quizPlaneBlank1" placeholder="빈칸 1" style="width: 72px; text-align: center; font-weight: 700; padding: 0.2rem 0.35rem; border: 1.5px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; color: var(--primary);">
+                <span>의 길이의</span>
+                <input type="text" id="quizPlaneBlank2" placeholder="빈칸 2" style="width: 44px; text-align: center; font-weight: 700; padding: 0.2rem 0.35rem; border: 1.5px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; color: var(--primary);">
+                <span>는 일정하다.</span>
+              </div>
+
+              <!-- 2 대응각의 크기는 각각 같다. -->
+              <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem;">
+                <b style="color: #ea580c; font-size: 0.95rem;">2</b>
+                <input type="text" id="quizPlaneBlank3" placeholder="빈칸 3" style="width: 72px; text-align: center; font-weight: 700; padding: 0.2rem 0.35rem; border: 1.5px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; color: var(--primary);">
+                <span>의 크기는 각각 같다.</span>
+              </div>
+            </div>
+
+            <!-- Word Bank Chips -->
+            <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 700;">보기 낱말:</span>
+              <button type="button" class="btn btn-secondary btn-xs chip-plane-word" data-word="대응변">대응변</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-plane-word" data-word="비">비</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-plane-word" data-word="대응각">대응각</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-plane-word" data-word="넓이">넓이</button>
+            </div>
+
+            <!-- Submit & Reset Buttons -->
+            <div style="display: flex; gap: 0.35rem;">
+              <button type="button" id="btnCheckPlaneQuiz" class="btn btn-primary btn-sm" style="flex: 1;">✓ 빈칸 정답 확인</button>
+              <button type="button" id="btnClearPlaneQuiz" class="btn btn-secondary btn-sm">↺ 다시 풀기</button>
+            </div>
+
+            <div id="planeQuizFeedback" class="feedback-alert" style="display: none; margin-top: 0.5rem; font-size: 0.78rem; padding: 0.5rem 0.7rem; line-height: 1.45;"></div>
           </div>
 
           <!-- 닮음 기호 직접 표현 활동 (학생 입력 & 대응점 순서 검증) -->
@@ -349,7 +430,7 @@
               <span>✍️ 닮음 기호로 직접 나타내기</span>
               <span class="grade-badge" style="background: #e0e7ff; color: #4338ca; border-color: #c7d2fe;">대응점 순서 필수!</span>
             </div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.45rem;">
+            <div id="planeSimInstruction" style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.45rem;">
               △ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 직접 적어보세요.
             </div>
 
@@ -358,11 +439,13 @@
               <button id="btnCheckSim" class="btn btn-primary btn-sm" type="button" style="white-space: nowrap; padding: 0.35rem 0.7rem;">확인</button>
             </div>
 
-            <!-- Quick helper buttons: Only △ and ∽ -->
-            <div style="display: flex; gap: 0.35rem; align-items: center; margin-bottom: 0.4rem;">
-              <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">기호 입력:</span>
-              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val="△" type="button" style="font-weight: 700; padding: 0.25rem 0.65rem;">△</button>
-              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val=" ∽ " type="button" style="font-weight: 800; font-size: 1rem; padding: 0.2rem 0.65rem;">∽</button>
+            <!-- Quick helper buttons: △, □, ⊙, ∽ -->
+            <div style="display: flex; gap: 0.25rem; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap;">
+              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600;">기호:</span>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val="△" type="button" style="font-weight: 700; padding: 0.2rem 0.5rem; font-size: 0.8rem;">△</button>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val="□" type="button" style="font-weight: 700; padding: 0.2rem 0.5rem; font-size: 0.8rem;">□</button>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val="⊙" type="button" style="font-weight: 700; padding: 0.2rem 0.5rem; font-size: 0.8rem;">⊙</button>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val=" ∽ " type="button" style="font-weight: 800; font-size: 0.95rem; padding: 0.2rem 0.55rem;">∽</button>
               <button id="btnClearSimInput" class="btn btn-secondary btn-xs" type="button" style="margin-left: auto;">↺ 지우기</button>
             </div>
 
@@ -500,6 +583,57 @@
               <div class="data-row"><span>입체 닮음비:</span> <b>1 : 1.5</b></div>
             </div>
           </div>
+
+          <!-- 입체도형에서 닮음의 성질 빈칸넣기 퀴즈 -->
+          <div class="card" id="cardSolidPropertyQuiz">
+            <div class="card-title">
+              <span>📖 입체도형에서 닮음의 성질</span>
+              <span class="grade-badge" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">개념 빈칸 퀴즈</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.55rem; line-height: 1.4;">
+              3D 입체 및 대응면 분리 탐구를 통해 발견한 <b>입체도형에서 닮음의 성질</b>을 빈칸에 알맞은 단어를 넣어 완성해보세요!
+            </div>
+
+            <div style="background: #f8fafc; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 0.7rem 0.75rem; margin-bottom: 0.55rem; font-size: 0.85rem; line-height: 2.1;">
+              <div style="font-weight: 700; color: #047857; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.3rem;">
+                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #047857;"></span>
+                <span>서로 닮은 두 입체도형에서</span>
+              </div>
+              
+              <!-- 1 대응하는 모서리의 길이의 비는 일정하다. -->
+              <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem;">
+                <b style="color: #ea580c; font-size: 0.95rem;">1</b>
+                <span>대응하는</span>
+                <input type="text" id="quizSolidBlank1" placeholder="빈칸 1" style="width: 72px; text-align: center; font-weight: 700; padding: 0.2rem 0.35rem; border: 1.5px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; color: var(--primary);">
+                <span>의 길이의 비는 일정하다.</span>
+              </div>
+
+              <!-- 2 대응하는 면은 서로 닮은 도형이다. -->
+              <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.3rem;">
+                <b style="color: #ea580c; font-size: 0.95rem;">2</b>
+                <span>대응하는</span>
+                <input type="text" id="quizSolidBlank2" placeholder="빈칸 2" style="width: 44px; text-align: center; font-weight: 700; padding: 0.2rem 0.35rem; border: 1.5px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; color: var(--primary);">
+                <span>은 서로 닮은 도형이다.</span>
+              </div>
+            </div>
+
+            <!-- Word Bank Chips -->
+            <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 700;">보기 낱말:</span>
+              <button type="button" class="btn btn-secondary btn-xs chip-solid-word" data-word="모서리">모서리</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-solid-word" data-word="면">면</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-solid-word" data-word="부피">부피</button>
+              <button type="button" class="btn btn-secondary btn-xs chip-solid-word" data-word="꼭짓점">꼭짓점</button>
+            </div>
+
+            <!-- Submit & Reset Buttons -->
+            <div style="display: flex; gap: 0.35rem;">
+              <button type="button" id="btnCheckSolidQuiz" class="btn btn-primary btn-sm" style="flex: 1;">✓ 빈칸 정답 확인</button>
+              <button type="button" id="btnClearSolidQuiz" class="btn btn-secondary btn-sm">↺ 다시 풀기</button>
+            </div>
+
+            <div id="solidQuizFeedback" class="feedback-alert" style="display: none; margin-top: 0.5rem; font-size: 0.78rem; padding: 0.5rem 0.7rem; line-height: 1.45;"></div>
+          </div>
         </aside>
       </div>
     </section>
@@ -547,10 +681,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=4.1"></script>
-  <script src="js/plane-lab.js?v=4.1"></script>
-  <script src="js/solid-lab.js?v=4.1"></script>
-  <script src="js/missions.js?v=4.1"></script>
-  <script src="js/app.js?v=4.1"></script>
+  <script src="js/intro-lab.js?v=4.2"></script>
+  <script src="js/plane-lab.js?v=4.2"></script>
+  <script src="js/solid-lab.js?v=4.2"></script>
+  <script src="js/missions.js?v=4.2"></script>
+  <script src="js/app.js?v=4.2"></script>
 </body>
 </html>

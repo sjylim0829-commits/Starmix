@@ -949,6 +949,9 @@ class SolidLab {
         this.updateDimensionLabels();
       });
     }
+
+    // Property Fill-in-the-Blank Quiz
+    this.setupPropertyQuiz();
   }
 
   setScale(x, y, z) {
@@ -1667,6 +1670,123 @@ class SolidLab {
 
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
+    }
+  }
+
+  /* ---------------- Property Quiz: 입체도형에서 닮음의 성질 빈칸넣기 ---------------- */
+  setupPropertyQuiz() {
+    const b1 = document.getElementById('quizSolidBlank1');
+    const b2 = document.getElementById('quizSolidBlank2');
+    const btnCheck = document.getElementById('btnCheckSolidQuiz');
+    const btnClear = document.getElementById('btnClearSolidQuiz');
+    const feedback = document.getElementById('solidQuizFeedback');
+    const chips = document.querySelectorAll('.chip-solid-word');
+
+    if (!b1 || !b2 || !btnCheck) return;
+
+    let activeBlank = b1;
+
+    [b1, b2].forEach(blank => {
+      blank.addEventListener('focus', () => {
+        activeBlank = blank;
+      });
+      blank.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') checkAnswers();
+      });
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const word = chip.dataset.word;
+        if (!word) return;
+        let target = activeBlank;
+        if (target.value.trim() !== '') {
+          const empty = [b1, b2].find(b => b.value.trim() === '');
+          if (empty) target = empty;
+        }
+        target.value = word;
+        const nextEmpty = [b1, b2].find(b => b.value.trim() === '');
+        if (nextEmpty) {
+          activeBlank = nextEmpty;
+          nextEmpty.focus();
+        } else {
+          target.focus();
+        }
+      });
+    });
+
+    const checkAnswers = () => {
+      const v1 = b1.value.trim().replace(/\s+/g, '');
+      const v2 = b2.value.trim().replace(/\s+/g, '');
+
+      if (!v1 && !v2) {
+        if (feedback) {
+          feedback.className = 'feedback-alert error';
+          feedback.innerHTML = '⚠️ 빈칸에 알맞은 단어를 먼저 입력하거나 아래 [보기 낱말]을 클릭해보세요!';
+          feedback.style.display = 'block';
+        }
+        return;
+      }
+
+      const c1 = (v1 === '모서리' || v1 === '모서리의');
+      const c2 = (v2 === '면');
+
+      const styleInput = (el, isCorrect) => {
+        if (isCorrect) {
+          el.style.borderColor = '#10b981';
+          el.style.background = '#ecfdf5';
+          el.style.color = '#047857';
+        } else {
+          el.style.borderColor = '#ef4444';
+          el.style.background = '#fef2f2';
+          el.style.color = '#b91c1c';
+        }
+      };
+
+      styleInput(b1, c1);
+      styleInput(b2, c2);
+
+      if (!feedback) return;
+
+      if (c1 && c2) {
+        feedback.className = 'feedback-alert success';
+        feedback.innerHTML = `
+          🎉 <b>정답입니다! 참 잘했어요!</b><br>
+          입체도형에서 닮음의 두 가지 핵심 성질을 완벽히 정리했습니다.<br>
+          <div style="margin-top: 0.35rem; padding: 0.5rem; background: #ffffff; border-radius: 4px; border-left: 3px solid #10b981; line-height: 1.6;">
+            <b>1</b> 대응하는 <b>모서리</b>의 길이의 비는 일정하다.<br>
+            <b>2</b> 대응하는 <b>면</b>은 서로 닮은 도형이다.
+          </div>
+        `;
+        feedback.style.display = 'block';
+      } else {
+        let hints = [];
+        if (!c1) hints.push('• <b>1번 빈칸</b>: 입체도형의 선분(모서리)의 길이의 비가 일정해야 합니다. (힌트: <b>모서리</b>)');
+        if (!c2) hints.push('• <b>2번 빈칸</b>: 2D 평면 분리에서 관찰했던 입체의 구성 요소입니다. (힌트: <b>면</b>)');
+
+        feedback.className = 'feedback-alert error';
+        feedback.innerHTML = `
+          ❌ <b>틀린 빈칸이 있습니다! 아래 힌트를 확인해보세요.</b><br>
+          ${hints.join('<br>')}
+        `;
+        feedback.style.display = 'block';
+      }
+    };
+
+    btnCheck.addEventListener('click', checkAnswers);
+
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        [b1, b2].forEach(b => {
+          b.value = '';
+          b.style.borderColor = '#cbd5e1';
+          b.style.background = '#ffffff';
+          b.style.color = 'var(--primary)';
+        });
+        if (feedback) feedback.style.display = 'none';
+        activeBlank = b1;
+        b1.focus();
+      });
     }
   }
 }

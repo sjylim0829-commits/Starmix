@@ -531,6 +531,35 @@ canvas#planeCanvas, canvas#threeCanvas {
   box-shadow: var(--shadow-sm);
 }
 
+/* Plane Shape Switcher Grid */
+.plane-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.15rem;
+}
+
+.plane-shape-btn {
+  padding: 0.35rem 0.25rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  justify-content: center;
+}
+
+.plane-shape-btn.active {
+  background: var(--primary) !important;
+  color: white !important;
+  border-color: var(--primary-dark) !important;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.35);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
