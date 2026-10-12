@@ -24,6 +24,7 @@ class MissionsLab {
     this.render();
     this.initMission1Canvas();
     this.bindMission2Events();
+    this.bindMission3Events();
   }
 
   render() {
@@ -134,6 +135,205 @@ class MissionsLab {
           </button>
 
           <div id="mission2Feedback" class="feedback-alert" style="display: none;"></div>
+        </div>
+
+        <!-- MISSION 3: 입체도형 사각뿔대의 닮음비와 대응요소 -->
+        <div class="mission-panel full-width">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span class="mission-tag" style="background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe;">미션 3 · 입체도형 실전 문제</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">[교과서 문제 3]</span>
+            </div>
+            <div class="mission-title" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span>두 사각뿔대의 닮음비와 모서리의 길이, 대응면을 구하세요!</span>
+              <span class="grade-badge" style="background: #faf5ff; color: #9333ea; border-color: #e9d5ff;">입체도형 닮음비</span>
+            </div>
+            <div class="mission-desc" style="margin-bottom: 1rem;">
+              오른쪽 두 사각뿔대 <b>(가)</b>와 <b>(나)</b>는 서로 닮은 도형이고, 
+              보라색으로 색칠된 <b style="color: #7c3aed;">□BFGC</b>와 <b style="color: #7c3aed;">□JNOK</b>가 서로 대응하는 면입니다.
+              아래 세 물음에 알맞은 답을 구해보세요.
+            </div>
+          </div>
+
+          <!-- Two-Column Layout inside Mission 3: Left = SVG Diagram, Right = 3 Questions -->
+          <div class="mission-m3-grid">
+            
+            <!-- Left Column: Textbook Diagram (SVG) -->
+            <div style="background: #ffffff; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <svg viewBox="0 0 510 235" width="100%" height="auto" style="max-height: 235px; overflow: visible;">
+                <!-- ====== FRUSTUM (가) ====== -->
+                <!-- Hidden dashed edges for (가) -->
+                <line x1="85" y1="42" x2="60" y2="142" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4" />
+                <line x1="60" y1="142" x2="25" y2="186" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4" />
+                <line x1="60" y1="142" x2="215" y2="142" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4" />
+
+                <!-- Right side face CDHG (가) -->
+                <polygon points="150,78 175,42 215,142 180,186" fill="#faf5ff" stroke="#334155" stroke-width="1.8" />
+
+                <!-- Shaded front face BFGC (가) -->
+                <polygon points="60,78 150,78 180,186 25,186" fill="rgba(192, 132, 252, 0.4)" stroke="#9333ea" stroke-width="2.2" />
+
+                <!-- Top face ABCD (가) -->
+                <polygon points="85,42 175,42 150,78 60,78" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
+
+                <!-- Outer visible edges (가) -->
+                <line x1="60" y1="78" x2="25" y2="186" stroke="#334155" stroke-width="2.2" />
+                <line x1="150" y1="78" x2="180" y2="186" stroke="#334155" stroke-width="2.2" />
+                <line x1="175" y1="42" x2="215" y2="142" stroke="#334155" stroke-width="2.2" />
+                <line x1="25" y1="186" x2="180" y2="186" stroke="#334155" stroke-width="2.2" />
+                <line x1="180" y1="186" x2="215" y2="142" stroke="#334155" stroke-width="2" />
+
+                <!-- Dimension AD = 8 cm -->
+                <path d="M 85,38 Q 130,26 175,38" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+                <text x="130" y="24" text-anchor="middle" font-size="12" font-weight="700" fill="#1e293b">8 cm</text>
+
+                <!-- Dimension FG = 12 cm -->
+                <path d="M 25,192 Q 102,204 180,192" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+                <text x="102" y="214" text-anchor="middle" font-size="12" font-weight="700" fill="#1e293b">12 cm</text>
+
+                <!-- Vertices (가) -->
+                <circle cx="85" cy="42" r="3" fill="#334155" />
+                <text x="76" y="38" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">A</text>
+                <circle cx="60" cy="78" r="3" fill="#334155" />
+                <text x="50" y="78" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">B</text>
+                <circle cx="150" cy="78" r="3" fill="#334155" />
+                <text x="142" y="72" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">C</text>
+                <circle cx="175" cy="42" r="3" fill="#334155" />
+                <text x="185" y="38" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">D</text>
+                <text x="68" y="138" text-anchor="start" font-size="11" font-weight="700" fill="#94a3b8">E</text>
+                <circle cx="25" cy="186" r="3" fill="#334155" />
+                <text x="16" y="190" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">F</text>
+                <circle cx="180" cy="186" r="3" fill="#334155" />
+                <text x="190" y="190" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">G</text>
+                <circle cx="215" cy="142" r="3" fill="#334155" />
+                <text x="225" y="144" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">H</text>
+
+                <!-- Label (가) -->
+                <text x="102" y="228" text-anchor="middle" font-size="14" font-weight="800" fill="#1e293b">(가)</text>
+
+                <!-- ====== FRUSTUM (나) ====== -->
+                <!-- Hidden dashed edges for (나) -->
+                <line x1="345" y1="52" x2="326" y2="127" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" />
+                <line x1="326" y1="127" x2="300" y2="160" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" />
+                <line x1="326" y1="127" x2="443" y2="127" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" />
+
+                <!-- Right side face KLPO (나) -->
+                <polygon points="394,79 413,52 443,127 416,160" fill="#faf5ff" stroke="#334155" stroke-width="1.8" />
+
+                <!-- Shaded front face JNOK (나) -->
+                <polygon points="326,79 394,79 416,160 300,160" fill="rgba(192, 132, 252, 0.4)" stroke="#9333ea" stroke-width="2.2" />
+
+                <!-- Top face IJKL (나) -->
+                <polygon points="345,52 413,52 394,79 326,79" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
+
+                <!-- Outer visible edges (나) -->
+                <line x1="326" y1="79" x2="300" y2="160" stroke="#334155" stroke-width="2.2" />
+                <line x1="394" y1="79" x2="416" y2="160" stroke="#334155" stroke-width="2.2" />
+                <line x1="413" y1="52" x2="443" y2="127" stroke="#334155" stroke-width="2.2" />
+                <line x1="300" y1="160" x2="416" y2="160" stroke="#334155" stroke-width="2.2" />
+                <line x1="416" y1="160" x2="443" y2="127" stroke="#334155" stroke-width="1.8" />
+
+                <!-- Dimension IL = 6 cm -->
+                <path d="M 345,48 Q 379,38 413,48" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+                <text x="379" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e293b">6 cm</text>
+
+                <!-- Dimension LP = 9 cm -->
+                <path d="M 420,53 Q 448,87 450,127" fill="none" stroke="#64748b" stroke-width="1.2" stroke-dasharray="3,3" />
+                <text x="466" y="94" text-anchor="start" font-size="12" font-weight="700" fill="#1e293b">9 cm</text>
+
+                <!-- Vertices (나) -->
+                <circle cx="345" cy="52" r="3" fill="#334155" />
+                <text x="336" y="48" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">I</text>
+                <circle cx="326" cy="79" r="3" fill="#334155" />
+                <text x="316" y="78" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">J</text>
+                <circle cx="394" cy="79" r="3" fill="#334155" />
+                <text x="385" y="73" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">K</text>
+                <circle cx="413" cy="52" r="3" fill="#334155" />
+                <text x="423" y="48" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">L</text>
+                <text x="334" y="123" text-anchor="start" font-size="11" font-weight="700" fill="#94a3b8">M</text>
+                <circle cx="300" cy="160" r="3" fill="#334155" />
+                <text x="290" y="166" text-anchor="end" font-size="12" font-weight="800" fill="#1e293b">N</text>
+                <circle cx="416" cy="160" r="3" fill="#334155" />
+                <text x="426" y="166" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">O</text>
+                <circle cx="443" cy="127" r="3" fill="#334155" />
+                <text x="452" y="132" text-anchor="start" font-size="12" font-weight="800" fill="#1e293b">P</text>
+
+                <!-- Label (나) -->
+                <text x="360" y="200" text-anchor="middle" font-size="14" font-weight="800" fill="#1e293b">(나)</text>
+              </svg>
+
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center; line-height: 1.45;">
+                💡 <b>보라색 음영 면:</b> □BFGC ↔ □JNOK (서로 대응하는 면)<br>
+                대응하는 꼭짓점의 위치와 모서리의 길이를 관찰해보세요.
+              </div>
+            </div>
+
+            <!-- Right Column: 3 Sub-questions -->
+            <div>
+              <!-- Sub-question (1) -->
+              <div class="mission-subquest-box">
+                <div class="mission-subquest-title">
+                  <span style="background: #7c3aed; color: white; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">1</span>
+                  <span>두 사각뿔대 (가)와 (나)의 닮음비</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                  가장 간단한 자연수의 비($m : n$)로 입력하세요:
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="number" id="inputM3RatioM" class="ratio-num-input" placeholder="m" style="width: 60px; padding: 0.45rem;">
+                  <b style="font-size: 1.1rem; color: var(--text-muted);">:</b>
+                  <input type="number" id="inputM3RatioN" class="ratio-num-input" placeholder="n" style="width: 60px; padding: 0.45rem;">
+                </div>
+              </div>
+
+              <!-- Sub-question (2) -->
+              <div class="mission-subquest-box">
+                <div class="mission-subquest-title">
+                  <span style="background: #7c3aed; color: white; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">2</span>
+                  <span>선분 DH (<span style="text-decoration: overline;">DH</span>)의 길이</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="number" id="inputM3DH" class="ratio-num-input" placeholder="길이" style="width: 80px; padding: 0.45rem;">
+                  <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">cm</span>
+                </div>
+              </div>
+
+              <!-- Sub-question (3) -->
+              <div class="mission-subquest-box">
+                <div class="mission-subquest-title">
+                  <span style="background: #7c3aed; color: white; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">3</span>
+                  <span>면 ABCD에 대응하는 면</span>
+                </div>
+                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                  <input type="text" id="inputM3Face" placeholder="예: 면 IJKL" style="flex: 1; min-width: 140px; padding: 0.45rem 0.6rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; color: var(--primary);">
+                </div>
+                <!-- Quick Helper Chips for Tablet / Mobile -->
+                <div style="display: flex; gap: 0.3rem; margin-top: 0.4rem; flex-wrap: wrap;">
+                  <span style="font-size: 0.74rem; color: var(--text-muted); align-self: center;">빠른 입력:</span>
+                  <button type="button" class="m3-chip-btn" data-char="면 ">면</button>
+                  <button type="button" class="m3-chip-btn" data-char="□">□</button>
+                  <button type="button" class="m3-chip-btn" data-char="I">I</button>
+                  <button type="button" class="m3-chip-btn" data-char="J">J</button>
+                  <button type="button" class="m3-chip-btn" data-char="K">K</button>
+                  <button type="button" class="m3-chip-btn" data-char="L">L</button>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button type="button" id="btnCheckMission3" class="btn btn-primary" style="flex: 2; font-weight: 700;">
+                  ✓ 문제 3 정답 제출 및 채점하기
+                </button>
+                <button type="button" id="btnClearMission3" class="btn btn-secondary" style="flex: 1;">
+                  ↺ 다시 풀기
+                </button>
+              </div>
+
+              <!-- Feedback box -->
+              <div id="mission3Feedback" class="feedback-alert" style="display: none; margin-top: 0.85rem;"></div>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -473,6 +673,167 @@ class MissionsLab {
         }
       });
     }
+  }
+
+  /* ---------------- Mission 3 Events & Grading (사각뿔대 닮음비와 대응요소) ---------------- */
+  bindMission3Events() {
+    const btnCheck = document.getElementById('btnCheckMission3');
+    const btnClear = document.getElementById('btnClearMission3');
+    const feedback = document.getElementById('mission3Feedback');
+    const inputM = document.getElementById('inputM3RatioM');
+    const inputN = document.getElementById('inputM3RatioN');
+    const inputDH = document.getElementById('inputM3DH');
+    const inputFace = document.getElementById('inputM3Face');
+    const chips = document.querySelectorAll('.m3-chip-btn');
+
+    if (!btnCheck || !feedback) return;
+
+    // Helper Chips for Question 3
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const char = chip.dataset.char;
+        if (inputFace && char) {
+          inputFace.value += char;
+          inputFace.focus();
+        }
+      });
+    });
+
+    // Enter Key Navigation
+    if (inputM) {
+      inputM.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (inputN) inputN.focus();
+        }
+      });
+    }
+    if (inputN) {
+      inputN.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (inputDH) inputDH.focus();
+        }
+      });
+    }
+    if (inputDH) {
+      inputDH.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          if (inputFace) inputFace.focus();
+        }
+      });
+    }
+    if (inputFace) {
+      inputFace.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          btnCheck.click();
+        }
+      });
+    }
+
+    // Reset button
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        if (inputM) inputM.value = '';
+        if (inputN) inputN.value = '';
+        if (inputDH) inputDH.value = '';
+        if (inputFace) inputFace.value = '';
+        feedback.style.display = 'none';
+        if (inputM) inputM.focus();
+      });
+    }
+
+    // Check & Grade
+    btnCheck.addEventListener('click', () => {
+      const valM = parseInt(inputM ? inputM.value : '');
+      const valN = parseInt(inputN ? inputN.value : '');
+      const valDH = parseFloat(inputDH ? inputDH.value : '');
+      const rawFace = inputFace ? inputFace.value.trim().toUpperCase().replace(/[\s□사각형면\-]/g, '') : '';
+
+      if (isNaN(valM) && isNaN(valN) && isNaN(valDH) && !rawFace) {
+        feedback.className = 'feedback-alert error';
+        feedback.innerHTML = '⚠️ 문제 3의 답안을 먼저 입력해주세요!';
+        feedback.style.display = 'block';
+        return;
+      }
+
+      // 1. Check Similarity Ratio (4 : 3)
+      let q1Correct = (valM === 4 && valN === 3);
+      let q1Note = '';
+      if (q1Correct) {
+        q1Note = '✓ <b>(1) 닮음비:</b> 정답! $\\overline{\\text{AD}} : \\overline{\\text{IL}} = 8 : 6 = $ <b>4 : 3</b>';
+      } else if ((valM === 8 && valN === 6) || (valM === 12 && valN === 9)) {
+        q1Note = `❌ <b>(1) 닮음비:</b> 비의 값은 맞았으나, <b>가장 간단한 자연수의 비(4 : 3)</b>로 약분해야 합니다.`;
+      } else if (valM === 3 && valN === 4) {
+        q1Note = `❌ <b>(1) 닮음비:</b> (가)와 (나)의 순서가 바뀌었습니다. (가) : (나) 순서로 <b>4 : 3</b> 입니다.`;
+      } else {
+        q1Note = `❌ <b>(1) 닮음비:</b> 대응하는 두 모서리의 길이 $8\\text{ cm}$와 $6\\text{ cm}$의 비 $8 : 6$을 간단한 자연수의 비로 나타내보세요. (정답: <b>4 : 3</b>)`;
+      }
+
+      // 2. Check Edge DH Length (12 cm)
+      let q2Correct = Math.abs(valDH - 12) < 0.1;
+      let q2Note = '';
+      if (q2Correct) {
+        q2Note = '✓ <b>(2) $\\overline{\\text{DH}}$의 길이:</b> 정답! $\\overline{\\text{DH}} : \\overline{\\text{LP}} = 4 : 3 \\implies \\overline{\\text{DH}} = $ <b>12 cm</b>';
+      } else {
+        q2Note = '❌ <b>(2) $\\overline{\\text{DH}}$의 길이:</b> $\\overline{\\text{DH}} : \\overline{\\text{LP}} = 4 : 3$ 이고 $\\overline{\\text{LP}} = 9\\text{ cm}$ 입니다. 비례식 $\\overline{\\text{DH}} : 9 = 4 : 3$을 풀면 <b>12 cm</b>가 됩니다.';
+      }
+
+      // 3. Check Corresponding Face (면 IJKL)
+      let q3Correct = (rawFace === 'IJKL' || rawFace === 'JKLI' || rawFace === 'KLIJ' || rawFace === 'LIJK');
+      let q3Note = '';
+      if (q3Correct) {
+        q3Note = '✓ <b>(3) 대응하는 면:</b> 정답! 꼭짓점 A ↔ I, B ↔ J, C ↔ K, D ↔ L 순서에 맞춘 <b>면 IJKL</b>';
+      } else {
+        q3Note = '❌ <b>(3) 대응하는 면:</b> $\\square\\text{BFGC} \\leftrightarrow \\square\\text{JNOK}$이므로 A ↔ I, B ↔ J, C ↔ K, D ↔ L에 대응합니다. 대응점 순서대로 <b>면 IJKL</b> 입니다.';
+      }
+
+      const score = (q1Correct ? 1 : 0) + (q2Correct ? 1 : 0) + (q3Correct ? 1 : 0);
+
+      feedback.style.display = 'block';
+
+      if (score === 3) {
+        feedback.className = 'feedback-alert success';
+        feedback.innerHTML = `
+          <div style="font-size: 1rem; font-weight: 800; color: #047857; margin-bottom: 0.5rem;">
+            🎉 완벽한 만점입니다! 참 잘했어요! (3 / 3 정답)
+          </div>
+          <div style="font-size: 0.86rem; line-height: 1.7; background: white; padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid #10b981;">
+            • ${q1Note}<br>
+            • ${q2Note}<br>
+            • ${q3Note}
+          </div>
+          <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #065f46;">
+            💡 <b>교과서 개념 정리:</b> 서로 닮은 두 입체도형에서 <b>대응하는 모서리의 길이의 비는 일정</b>하며, 이 비가 곧 <b>닮음비</b>가 됩니다!
+          </div>
+        `;
+      } else if (score > 0) {
+        feedback.className = 'feedback-alert info';
+        feedback.innerHTML = `
+          <div style="font-size: 0.95rem; font-weight: 800; color: #92400e; margin-bottom: 0.5rem;">
+            👍 아쉬워요! ${score}문제를 맞혔습니다. (3문제 중 ${score}문제 정답)
+          </div>
+          <div style="font-size: 0.84rem; line-height: 1.65; background: white; padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b;">
+            • ${q1Note}<br>
+            • ${q2Note}<br>
+            • ${q3Note}
+          </div>
+          <div style="margin-top: 0.4rem; font-size: 0.8rem; color: #b45309;">
+            💡 오답이 있는 항목의 풀이를 확인하고 다시 입력해보세요!
+          </div>
+        `;
+      } else {
+        feedback.className = 'feedback-alert error';
+        feedback.innerHTML = `
+          <div style="font-size: 0.95rem; font-weight: 800; color: #991b1b; margin-bottom: 0.5rem;">
+            ⚠️ 다시 한 번 도전해볼까요? (0 / 3)
+          </div>
+          <div style="font-size: 0.84rem; line-height: 1.65; background: white; padding: 0.75rem 1rem; border-radius: var(--radius-sm); border-left: 4px solid #ef4444;">
+            • ${q1Note}<br>
+            • ${q2Note}<br>
+            • ${q3Note}
+          </div>
+        `;
+      }
+    });
   }
 }
 
