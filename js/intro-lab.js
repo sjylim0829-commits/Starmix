@@ -78,10 +78,11 @@ class IntroLab {
         quizFeedback.style.display = 'block';
         quizFeedback.className = 'feedback-alert error';
         quizFeedback.innerHTML = `
-          <b>❌ 아쉬워요! 사진 A는 원래 모양이 왜곡되었어요.</b><br>
-          가로로만 2배 이상 늘어나 얼굴이 넙데데해졌고 원래의 각도와 비율이 깨졌습니다.<br>
-          이것은 수학에서 <b>"닮음이 아닙니다"</b>!
+          <b>❌ 다시 생각해볼까요? 사진 A는 모양이 왜곡되었어요.</b><br>
+          가로로만 늘어나 얼굴이 넙데데해졌고 본래 얼굴의 가로·세로 비율이 달라졌습니다.<br>
+          얼굴 모양이 찌그러지지 않고 본래 형태를 그대로 유지한 사진을 선택해보세요!
         `;
+        if (btnGoToPlane) btnGoToPlane.style.display = 'none';
       });
 
       photoOptionB.addEventListener('click', () => {
@@ -93,9 +94,13 @@ class IntroLab {
         quizFeedback.style.display = 'block';
         quizFeedback.className = 'feedback-alert success';
         quizFeedback.innerHTML = `
-          <b>🎉 완벽한 정답입니다! 사진 B가 바로 수학의 "닮음"입니다!</b><br>
-          대각선 방향으로 가로와 세로를 <b>모두 똑같은 비율</b>로 키웠기 때문에, 크기만 커졌을 뿐 원래 얼굴의 모양과 각도가 완벽히 보존되었습니다.<br>
-          👉 <b>"한 도형을 일정한 비율로 확대하거나 축소하여 모양이 변하지 않는 관계"</b>, 이것이 바로 오늘 배울 <b>도형의 닮음</b>입니다!
+          <b>🎉 정답입니다! 사진 B가 본래 얼굴 모양을 그대로 유지하고 있습니다!</b><br>
+          가로와 세로를 <b>모두 똑같은 비율</b>로 늘렸기 때문에 찌그러짐 없이 크기만 커졌습니다.<br>
+          <div style="margin-top: 0.65rem; padding: 0.75rem; background: #ffffff; border: 1.5px solid #a7f3d0; border-left: 4px solid #10b981; border-radius: 6px; color: #1e293b; line-height: 1.55;">
+            <b style="color: #047857; font-size: 0.9rem;">📖 [수학적 개념 도입: 도형의 닮음]</b><br>
+            한 도형을 <b>일정한 비율로 확대하거나 축소</b>한 도형이 다른 도형과 합동이 될 때,<br>
+            두 도형은 서로 <b>'닮음인 관계'</b>에 있다고 하며, 이러한 도형을 <b>'닮은 도형'</b>이라고 합니다.
+          </div>
         `;
         if (btnGoToPlane) btnGoToPlane.style.display = 'inline-flex';
       });
@@ -151,15 +156,15 @@ class IntroLab {
       } else if (isUniform) {
         statusBadge.className = 'badge-similarity yes';
         statusBadge.innerHTML = `✓ 정비율 확대 (가로 ${this.scaleX.toFixed(1)}배 = 세로 ${this.scaleY.toFixed(1)}배)`;
-        descText.innerHTML = '<b>😊 편안함!</b> 가로와 세로가 똑같이 늘어나 원래 얼굴 모양과 비율이 완벽히 유지됩니다. (수학적 <b>닮음</b>)';
+        descText.innerHTML = '<b>😊 편안함!</b> 가로와 세로가 똑같은 비율로 늘어나 원래 얼굴 모양과 비율이 그대로 유지됩니다.';
       } else if (this.scaleX > this.scaleY) {
         statusBadge.className = 'badge-similarity no';
         statusBadge.innerHTML = `✗ 가로 왜곡 발생! (가로 ${this.scaleX.toFixed(1)}배 > 세로 ${this.scaleY.toFixed(1)}배)`;
-        descText.innerHTML = '<b>😱 넙데데!</b> 가로로만 늘어나 얼굴이 옆으로 펑퍼짐해졌습니다. 비율이 깨져 닮음이 아닙니다!';
+        descText.innerHTML = '<b>😱 넙데데!</b> 가로로만 늘어나 얼굴이 옆으로 펑퍼짐해졌습니다. 가로·세로 비율이 달라 원래 모양이 찌그러졌습니다!';
       } else {
         statusBadge.className = 'badge-similarity no';
         statusBadge.innerHTML = `✗ 세로 왜곡 발생! (세로 ${this.scaleY.toFixed(1)}배 > 가로 ${this.scaleX.toFixed(1)}배)`;
-        descText.innerHTML = '<b>😲 길쭉길쭉!</b> 세로로만 늘어나 얼굴이 과도하게 길어졌습니다. 닮음이 아닙니다!';
+        descText.innerHTML = '<b>😲 길쭉길쭉!</b> 세로로만 늘어나 얼굴이 과도하게 길어졌습니다. 가로·세로 비율이 달라 원래 모양이 찌그러졌습니다!';
       }
     }
   }
