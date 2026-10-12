@@ -807,7 +807,6 @@ class SolidLab {
   updateStatus(isSimilar) {
     const badge = document.getElementById('solidSimilarityBadge');
     const detailBox = document.getElementById('solidAnalysisDetail');
-    const faceDetailBox = document.getElementById('solidFaceDetail');
 
     const curW = (2.0 * this.scaleX).toFixed(1);
     const curD = (3.0 * this.scaleZ).toFixed(1);
@@ -839,60 +838,6 @@ class SolidLab {
           <div class="data-row" style="color: #dc2626;"><span>결론:</span> <b>입체도형 닮음이 성립하지 않음</b></div>
         `;
       }
-    }
-
-    // Detailed Face Similarity Analysis
-    if (faceDetailBox) {
-      let faceName = '앞면 (Front Face)';
-      let baseW = 2.0, baseH = 4.0;
-      let transW = 2.0 * this.scaleX, transH = 4.0 * this.scaleY;
-      let rW = this.scaleX;
-      let rH = this.scaleY;
-
-      if (this.selectedFace === 'top') {
-        faceName = '윗면 (Top Face)';
-        baseW = 2.0; baseH = 3.0;
-        transW = 2.0 * this.scaleX; transH = 3.0 * this.scaleZ;
-        rW = this.scaleX;
-        rH = this.scaleZ;
-      } else if (this.selectedFace === 'side') {
-        faceName = '옆면 (Side Face)';
-        baseW = 3.0; baseH = 4.0;
-        transW = 3.0 * this.scaleZ; transH = 4.0 * this.scaleY;
-        rW = this.scaleZ;
-        rH = this.scaleY;
-      }
-
-      const isFaceSimilar = Math.abs(rW - rH) < 0.01;
-
-      faceDetailBox.innerHTML = `
-        <div style="background: #ffffff; border: 2px solid ${isFaceSimilar ? '#10b981' : '#f59e0b'}; border-radius: var(--radius-md); padding: 1rem; margin-top: 0.85rem; box-shadow: var(--shadow-sm);">
-          
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <b style="color: #b45309; font-size: 0.95rem;">🎯 면 분리 비교: ${faceName}</b>
-            <span style="font-size: 0.78rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; ${isFaceSimilar ? 'background: #ecfdf5; color: #059669;' : 'background: #fef2f2; color: #dc2626;'}">
-              ${isFaceSimilar ? '✓ 대응면 닮음' : '✗ 대응면 왜곡'}
-            </span>
-          </div>
-
-          <!-- Highlighted Similarity Ratio for the Face -->
-          <div style="font-size: 1.05rem; font-weight: 800; text-align: center; padding: 0.55rem; background: ${isFaceSimilar ? '#ecfdf5' : '#fef2f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'}; border-radius: 8px; margin: 0.5rem 0;">
-            ${isFaceSimilar 
-              ? `✨ [${faceName}] 닮음비 = 1 : ${rW.toFixed(1)}` 
-              : `⚠ [${faceName}] 비율 불일치 (닮음비 없음)`}
-          </div>
-
-          <div class="data-row"><span>기준 직사각형:</span> <b>${baseW.toFixed(1)} × ${baseH.toFixed(1)} (가로:세로 비 1 : ${(baseH/baseW).toFixed(2)})</b></div>
-          <div class="data-row"><span>확대 직사각형:</span> <b>${transW.toFixed(1)} × ${transH.toFixed(1)} (가로:세로 비 1 : ${(transH/transW).toFixed(2)})</b></div>
-          <div class="data-row"><span>대응변의 비:</span> <b>가로 1 : ${rW.toFixed(1)} / 세로 1 : ${rH.toFixed(1)}</b></div>
-          
-          <div style="margin-top: 0.6rem; font-size: 0.84rem; line-height: 1.45; padding: 0.5rem 0.65rem; border-radius: 6px; background: ${isFaceSimilar ? '#f0fdf4' : '#fff1f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'};">
-            ${isFaceSimilar 
-              ? `<b>대응면 성질 증명:</b> 입체에서 분리된 두 직사각형의 가로와 세로가 모두 <b>1 : ${rW.toFixed(1)}</b>로 늘어나 대응면끼리 닮음입니다! 이처럼 <b>모든 대응면이 닮음이어야 입체도형의 닮음이 성립</b>합니다.` 
-              : `<b>대응면 성질 증명:</b> 분리된 직사각형의 가로 배율(${rW.toFixed(1)}배)과 세로 배율(${rH.toFixed(1)}배)이 달라 <b>직사각형 모양이 일그러졌습니다!</b> 대응면이 닮음이 아니므로 <b>입체도형도 닮음이 아닙니다.</b>`}
-          </div>
-        </div>
-      `;
     }
   }
 
