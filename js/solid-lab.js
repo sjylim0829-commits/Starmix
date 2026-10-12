@@ -1,7 +1,7 @@
 /**
- * Starmix Similarity Lab - Solid Geometry Module (3D Three.js 뷰어 + 대응면 클릭 분석 v2.2)
+ * Starmix Similarity Lab - Solid Geometry Module (3D Three.js 뷰어 + 대응면 클릭 분석 + 모서리 길이 3D 표시 v2.3)
  * Standard Cuboid: Width 2, Depth 3, Height 4
- * Using Multi-Material for Bulletproof Face Highlighting & Raycasting
+ * Using Multi-Material & High-DPI Camera-Facing 3D Sprites for Live Edge Dimensions
  */
 
 class SolidLab {
@@ -22,6 +22,7 @@ class SolidLab {
     this.baseMaterials = [];
     this.transMaterials = [];
     this.gridHelper = null;
+    this.labelsGroup = null;
 
     // Scale State
     this.scaleX = 1.5; // Width (가로 2)
@@ -30,6 +31,7 @@ class SolidLab {
 
     // Face selection: 'front' (+Z/idx 4), 'top' (+Y/idx 2), 'side' (+X/idx 0)
     this.selectedFace = 'front';
+    this.showDimensions = true;
 
     this.init();
   }
@@ -39,7 +41,8 @@ class SolidLab {
     this.createMeshes();
     this.setupControls();
     this.setupRaycasting();
-    this.selectFace('front'); // Initial face selection
+    this.selectFace('front');
+    this.updateDimensionLabels();
     this.animate();
 
     window.addEventListener('resize', () => this.onWindowResize());
@@ -78,6 +81,10 @@ class SolidLab {
     this.gridHelper.position.y = -0.01;
     this.scene.add(this.gridHelper);
 
+    // Labels Group
+    this.labelsGroup = new THREE.Group();
+    this.scene.add(this.labelsGroup);
+
     // Controls
     if (THREE.OrbitControls) {
       this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
@@ -98,12 +105,11 @@ class SolidLab {
 
     const geom = this.createGeometry();
 
-    // 1. Base Materials: 6 faces (+X, -X, +Y, -Y, +Z, -Z)
-    // 0: Right (+X), 1: Left (-X), 2: Top (+Y), 3: Bottom (-Y), 4: Front (+Z), 5: Back (-Z)
+    // 1. Base Materials (Emerald Green)
     this.baseMaterials = [];
     for (let i = 0; i < 6; i++) {
       this.baseMaterials.push(new THREE.MeshStandardMaterial({
-        color: 0x10b981, // Emerald Green
+        color: 0x10b981,
         roughness: 0.3,
         metalness: 0.1
       }));
@@ -131,7 +137,7 @@ class SolidLab {
 
     const geom = this.createGeometry();
     const isSimilar = (Math.abs(this.scaleX - this.scaleY) < 0.01) && (Math.abs(this.scaleY - this.scaleZ) < 0.01);
-    const color = isSimilar ? 0x4f46e5 : 0xef4444; // Indigo if similar, Red if distorted
+    const color = isSimilar ? 0x4f46e5 : 0xef4444;
     const edgeColor = isSimilar ? 0x312e81 : 0x991b1b;
 
     this.transMaterials = [];
@@ -159,8 +165,102 @@ class SolidLab {
 
     this.applyFaceHighlights();
     this.updateStatus(isSimilar);
+    this.updateDimensionLabels();
   }
 
+  /* ---------------- 3D Dimension Edge Labels ---------------- */
+  createLabelSprite(text, bgColor = '#059669', textColor = '#ffffff', width = 1.35, height = 0.52) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 96;
+    const ctx = canvas.getContext('2d');
+
+    // Rounded rectangle badge
+    ctx.fillStyle = bgColor;
+    const x = 8, y = 8, w = 240, h = 80, r = 20;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Text
+    ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 128, 48);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(width, height, 1);
+    sprite.renderOrder = 999;
+    return sprite;
+  }
+
+  updateDimensionLabels() {
+    if (!this.labelsGroup) return;
+
+    // Clear previous sprites
+    while (this.labelsGroup.children.length > 0) {
+      const obj = this.labelsGroup.children[0];
+      if (obj.material && obj.material.map) obj.material.map.dispose();
+      if (obj.material) obj.material.dispose();
+      this.labelsGroup.remove(obj);
+    }
+
+    if (!this.showDimensions) return;
+
+    // 1. Labels for Base Cuboid (가로 2, 세로 3, 높이 4)
+    // Base position is (-3.5, 2.0, 0), Width=2(X), Height=4(Y), Depth=3(Z)
+    const baseWidthSprite = this.createLabelSprite('가로: 2', '#059669');
+    baseWidthSprite.position.set(-3.5, 0.28, 1.95);
+    this.labelsGroup.add(baseWidthSprite);
+
+    const baseDepthSprite = this.createLabelSprite('세로: 3', '#059669');
+    baseDepthSprite.position.set(-2.05, 0.28, 0);
+    this.labelsGroup.add(baseDepthSprite);
+
+    const baseHeightSprite = this.createLabelSprite('높이: 4', '#059669');
+    baseHeightSprite.position.set(-4.95, 2.0, 1.55);
+    this.labelsGroup.add(baseHeightSprite);
+
+    // 2. Labels for Transformed Cuboid
+    const curW = 2.0 * this.scaleX;
+    const curH = 4.0 * this.scaleY;
+    const curD = 3.0 * this.scaleZ;
+    const isSimilar = (Math.abs(this.scaleX - this.scaleY) < 0.01) && (Math.abs(this.scaleY - this.scaleZ) < 0.01);
+    const badgeColor = isSimilar ? '#4f46e5' : '#dc2626';
+
+    // Trans position is (3.5, curH/2, 0)
+    const transWidthSprite = this.createLabelSprite(`가로: ${curW.toFixed(1)}`, badgeColor);
+    transWidthSprite.position.set(3.5, 0.28, curD / 2 + 0.45);
+    this.labelsGroup.add(transWidthSprite);
+
+    const transDepthSprite = this.createLabelSprite(`세로: ${curD.toFixed(1)}`, badgeColor);
+    transDepthSprite.position.set(3.5 + curW / 2 + 0.55, 0.28, 0);
+    this.labelsGroup.add(transDepthSprite);
+
+    const transHeightSprite = this.createLabelSprite(`높이: ${curH.toFixed(1)}`, badgeColor);
+    transHeightSprite.position.set(3.5 - curW / 2 - 0.55, curH / 2, curD / 2);
+    this.labelsGroup.add(transHeightSprite);
+  }
+
+  /* ---------------- Raycasting for Face Clicking ---------------- */
   setupRaycasting() {
     this.canvas.addEventListener('click', (e) => {
       const rect = this.canvas.getBoundingClientRect();
@@ -174,7 +274,6 @@ class SolidLab {
         const hit = intersects[0];
         const matIndex = hit.face.materialIndex;
 
-        // 0, 1: Side (+X, -X) | 2, 3: Top/Bottom (+Y, -Y) | 4, 5: Front/Back (+Z, -Z)
         let clickedFace = 'front';
         if (matIndex === 4 || matIndex === 5) {
           clickedFace = 'front';
@@ -203,7 +302,7 @@ class SolidLab {
       } else {
         chip.classList.remove('active');
         chip.style.background = 'white';
-        chip.style.borderColor = 'var(--border-color)';
+        chip.style.borderColor = '#e2e8f0';
         chip.style.color = 'var(--text-main)';
       }
     });
@@ -228,22 +327,18 @@ class SolidLab {
     }
 
     // Highlight target indices in glowing Amber (0xf59e0b)
-    let targetIndices = [4]; // default front (+Z)
-    if (this.selectedFace === 'front') {
-      targetIndices = [4, 5]; // Front and Back
-    } else if (this.selectedFace === 'top') {
+    let targetIndices = [4, 5]; // Front and Back
+    if (this.selectedFace === 'top') {
       targetIndices = [2, 3]; // Top and Bottom
     } else if (this.selectedFace === 'side') {
       targetIndices = [0, 1]; // Right and Left
     }
 
     targetIndices.forEach(idx => {
-      // Highlight base
       this.baseMaterials[idx].color.setHex(0xf59e0b);
       this.baseMaterials[idx].emissive.setHex(0xb45309);
       this.baseMaterials[idx].emissiveIntensity = 0.35;
 
-      // Highlight transformed
       this.transMaterials[idx].color.setHex(0xf59e0b);
       this.transMaterials[idx].emissive.setHex(0xb45309);
       this.transMaterials[idx].emissiveIntensity = 0.35;
@@ -259,6 +354,7 @@ class SolidLab {
     const btnPreset20 = document.getElementById('btnPreset20');
     const btnModeAxisSplit = document.getElementById('btnModeAxisSplit');
     const btnResetView = document.getElementById('btnResetSolidView');
+    const toggle3DDimensions = document.getElementById('toggle3DDimensions');
 
     if (scaleAllSlider && scaleAllVal) {
       scaleAllSlider.addEventListener('input', (e) => {
@@ -304,6 +400,14 @@ class SolidLab {
       btnResetView.addEventListener('click', () => {
         this.camera.position.set(7.5, 6.5, 10.5);
         if (this.controls) this.controls.target.set(0, 2, 0);
+      });
+    }
+
+    // Toggle 3D Dimensions Checkbox
+    if (toggle3DDimensions) {
+      toggle3DDimensions.addEventListener('change', (e) => {
+        this.showDimensions = e.target.checked;
+        this.updateDimensionLabels();
       });
     }
 
@@ -404,8 +508,8 @@ class SolidLab {
             </span>
           </div>
 
-          <div class="data-row"><span>기준 직사각형:</span> <b>${baseW.toFixed(1)} × ${baseH.toFixed(1)} (가로세로비 ${(baseW/baseH).toFixed(2)})</b></div>
-          <div class="data-row"><span>확대 직사각형:</span> <b>${transW.toFixed(1)} × ${transH.toFixed(1)} (가로세로비 ${(transW/transH).toFixed(2)})</b></div>
+          <div class="data-row"><span>기준 직사각형:</span> <b>${baseW.toFixed(1)} × ${baseH.toFixed(1)} (가로:세로 비 1 : ${(baseH/baseW).toFixed(2)})</b></div>
+          <div class="data-row"><span>확대 직사각형:</span> <b>${transW.toFixed(1)} × ${transH.toFixed(1)} (가로:세로 비 1 : ${(transH/transW).toFixed(2)})</b></div>
           <div class="data-row"><span>가로 배율 / 세로 배율:</span> <b>${rW.toFixed(1)}배 / ${rH.toFixed(1)}배</b></div>
           
           <div style="margin-top: 0.6rem; font-size: 0.84rem; line-height: 1.45; padding: 0.5rem 0.65rem; border-radius: 6px; background: ${isFaceSimilar ? '#f0fdf4' : '#fff1f2'}; color: ${isFaceSimilar ? '#065f46' : '#991b1b'};">

@@ -349,9 +349,13 @@
               <span style="font-size: 0.8rem; color: var(--primary);">🖱️ 3D 면을 직접 클릭해보세요!</span>
             </div>
 
-            <!-- Face Selector Chips (Click in 3D or click Chip) -->
+            <!-- Face Selector Chips & Dimension Toggle -->
             <div class="toolbar-group">
-              <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">대응면 선택:</span>
+              <label class="tool-chip">
+                <input type="checkbox" id="toggle3DDimensions" checked>
+                <span>📏 3D 모서리 길이</span>
+              </label>
+              <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; margin-left: 0.2rem;">대응면:</span>
               <button class="face-select-chip active" data-face="front" style="padding: 0.35rem 0.65rem; background: #fffbeb; border: 1.5px solid #f59e0b; color: #b45309; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">앞면 (2×4)</button>
               <button class="face-select-chip" data-face="top" style="padding: 0.35rem 0.65rem; background: white; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">윗면 (2×3)</button>
               <button class="face-select-chip" data-face="side" style="padding: 0.35rem 0.65rem; background: white; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">옆면 (3×4)</button>
@@ -467,10 +471,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=2.6"></script>
-  <script src="js/plane-lab.js?v=2.6"></script>
-  <script src="js/solid-lab.js?v=2.6"></script>
-  <script src="js/missions.js?v=2.6"></script>
-  <script src="js/app.js?v=2.6"></script>
+  <script src="js/intro-lab.js?v=2.7"></script>
+  <script src="js/plane-lab.js?v=2.7"></script>
+  <script src="js/solid-lab.js?v=2.7"></script>
+  <script src="js/missions.js?v=2.7"></script>
+  <script src="js/app.js?v=2.7"></script>
 </body>
 </html>
