@@ -28,6 +28,8 @@ class PlaneLab {
     this.scaleX = 2.0;
     this.scaleY = 2.0;
     this.isOverlay = false;
+    this.overlayProgress = 0.0; // 0.0 (separated) -> 1.0 (smoothly overlaid)
+    this.overlayAnimId = null;
     this.showLabels = true;
     this.showAngles = true;   // 각도 측정기 토글
     this.showLengths = true;  // 길이 눈금 토글
@@ -52,12 +54,15 @@ class PlaneLab {
     const parent = this.canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
     const width = parent.clientWidth || 800;
-    const height = Math.max(500, parent.clientHeight || 520);
+    const height = Math.max(260, parent.clientHeight || 420);
 
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
+
+    this.gridSize = Math.max(24, Math.min(36, Math.floor((height - 70) / 11)));
+    this.origin = { x: 55, y: height - 38 };
 
     this.ctx.resetTransform();
     this.ctx.scale(dpr, dpr);
@@ -112,8 +117,7 @@ class PlaneLab {
 
     if (toggleOverlay) {
       toggleOverlay.addEventListener('change', (e) => {
-        this.isOverlay = e.target.checked;
-        this.render();
+        this.animateOverlay(e.target.checked ? 1.0 : 0.0);
       });
     }
 
@@ -171,9 +175,13 @@ class PlaneLab {
         if (scaleVal) scaleVal.textContent = '2.0배';
         this.scaleX = 2.0;
         this.scaleY = 2.0;
-        this.isOverlay = false;
+        this.animateOverlay(0.0);
         if (toggleOverlay) toggleOverlay.checked = false;
         if (btnProp) this.updateButtonsStyle([btnProp, btnWidthOnly, btnHeightOnly], btnProp);
+        const simInput = document.getElementById('inputSimSymbol');
+        const simFeedback = document.getElementById('simSymbolFeedback');
+        if (simInput) simInput.value = '';
+        if (simFeedback) simFeedback.style.display = 'none';
         this.render();
       });
     }
@@ -195,6 +203,9 @@ class PlaneLab {
         this.evaluateStudentDrawing();
       });
     }
+
+    // Similarity Notation Typing Activity
+    this.setupSimilarityTypingActivity();
   }
 
   updateButtonsStyle(buttons, activeBtn) {
@@ -475,18 +486,45 @@ class PlaneLab {
     });
   }
 
+  animateOverlay(target) {
+    if (this.overlayAnimId) cancelAnimationFrame(this.overlayAnimId);
+    const startVal = this.overlayProgress;
+    const startTime = performance.now();
+    const duration = 650; // ms
+
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1.0, elapsed / duration);
+      // easeInOutCubic curve
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      this.overlayProgress = startVal + (target - startVal) * ease;
+      this.isOverlay = this.overlayProgress > 0.001;
+      this.render();
+
+      if (t < 1.0) {
+        this.overlayAnimId = requestAnimationFrame(step);
+      } else {
+        this.overlayProgress = target;
+        this.isOverlay = target > 0.5;
+        this.overlayAnimId = null;
+        this.render();
+      }
+    };
+    this.overlayAnimId = requestAnimationFrame(step);
+  }
+
   getTransformedPoly() {
     const originPt = this.basePoly[0]; // A(1, 1)
-    const offX = this.isOverlay ? 0 : this.transformedOffset.x;
-    const offY = this.isOverlay ? 0 : this.transformedOffset.y;
+    const currentOffsetX = this.transformedOffset.x * (1.0 - this.overlayProgress);
+    const currentOffsetY = this.transformedOffset.y * (1.0 - this.overlayProgress);
 
     return this.basePoly.map((pt, idx) => {
       const dx = (pt.x - originPt.x) * this.scaleX;
       const dy = (pt.y - originPt.y) * this.scaleY;
       const labels = ['D', 'E', 'F'];
       return {
-        x: (this.isOverlay ? originPt.x : originPt.x + offX) + dx,
-        y: (this.isOverlay ? originPt.y : originPt.y + offY) + dy,
+        x: originPt.x + currentOffsetX + dx,
+        y: originPt.y + currentOffsetY + dy,
         label: labels[idx]
       };
     });
@@ -495,6 +533,39 @@ class PlaneLab {
   render() {
     this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     this.drawGrid();
+
+    // Overlay Guide / Status Banner
+    if (this.overlayProgress > 0.01) {
+      this.ctx.save();
+      if (this.overlayProgress >= 0.99) {
+        this.ctx.fillStyle = '#ecfdf5';
+        this.ctx.strokeStyle = '#10b981';
+        this.ctx.lineWidth = 1.2;
+        this.ctx.beginPath();
+        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 420, 28, 6) : this.ctx.rect(15, 12, 420, 28);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.font = 'bold 12px Pretendard, sans-serif';
+        this.ctx.fillStyle = '#065f46';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('✓ 포개어보기: 점 A와 점 D(직각 꼭짓점)를 원점에 맞추어 포갰습니다!', 25, 30);
+      } else {
+        this.ctx.fillStyle = '#eff6ff';
+        this.ctx.strokeStyle = '#3b82f6';
+        this.ctx.lineWidth = 1.2;
+        this.ctx.beginPath();
+        this.ctx.roundRect ? this.ctx.roundRect(15, 12, 340, 28, 6) : this.ctx.rect(15, 12, 340, 28);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.font = 'bold 12px Pretendard, sans-serif';
+        this.ctx.fillStyle = '#1d4ed8';
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('← 삼각형 DEF가 좌측으로 이동하여 겹쳐지는 중...', 25, 30);
+      }
+      this.ctx.restore();
+    }
 
     // 1. Draw Reference Base Polygon ABC (Green)
     const baseAngles = ['90°', '53°', '37°'];
@@ -567,6 +638,135 @@ class PlaneLab {
         `;
       }
     }
+  }
+
+  /* ---------------- Similarity Symbol Direct Typing Activity ---------------- */
+  setupSimilarityTypingActivity() {
+    const input = document.getElementById('inputSimSymbol');
+    const btnInsert = document.getElementById('btnInsertSim');
+    const btnCheck = document.getElementById('btnCheckSim');
+    const btnClear = document.getElementById('btnClearSimInput');
+    const feedback = document.getElementById('simSymbolFeedback');
+    const helperChips = document.querySelectorAll('.chip-sim-helper');
+
+    if (!input || !btnCheck) return;
+
+    if (btnInsert) {
+      btnInsert.addEventListener('click', () => {
+        input.value += '∽';
+        input.focus();
+      });
+    }
+
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        input.value = '';
+        if (feedback) feedback.style.display = 'none';
+        input.focus();
+      });
+    }
+
+    helperChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        input.value += chip.dataset.val;
+        input.focus();
+      });
+    });
+
+    const checkInput = () => {
+      const raw = input.value.trim();
+      if (!raw) {
+        this.showSimFeedback('error', '⚠️ 닮음 기호 표현을 입력해주세요! (예: △ABC ∽ △DEF)');
+        return;
+      }
+
+      // Check if user typed "=" or "≡"
+      if (raw.includes('=') || raw.includes('≡')) {
+        this.showSimFeedback('info', '💡 기호 <b>=</b> 나 <b>≡</b> 은 크기까지 모두 같은 \'합동\'에 가깝습니다. 닮음에는 <b>닮음 기호(∽)</b>를 사용해야 합니다. (예: △ABC ∽ △DEF)');
+        return;
+      }
+
+      // Standardize similarity symbol
+      const standardized = raw.replace(/[~∼∿sS]/g, '∽');
+
+      if (!standardized.includes('∽')) {
+        this.showSimFeedback('error', '⚠️ 닮음 기호 <b>∽</b> 가 빠졌습니다! [∽] 버튼을 눌러 기호를 넣어보세요.');
+        return;
+      }
+
+      const parts = standardized.split('∽').map(s => s.trim());
+      if (parts.length !== 2) {
+        this.showSimFeedback('error', '⚠️ 두 삼각형 사이에 닮음 기호 <b>∽</b> 를 하나만 넣어주세요. (예: △ABC ∽ △DEF)');
+        return;
+      }
+
+      // Extract letters only (remove △, 삼각형, whitespace)
+      const cleanLetters = (str) => str.replace(/[^A-Za-z가-힣]/g, '').toUpperCase();
+      const leftLetters = cleanLetters(parts[0]);
+      const rightLetters = cleanLetters(parts[1]);
+
+      if (leftLetters.length !== 3 || rightLetters.length !== 3) {
+        this.showSimFeedback('error', `⚠️ 삼각형의 꼭짓점 3개를 각각 정확히 적어주세요. (입력됨: ${leftLetters || '없음'} ∽ ${rightLetters || '없음'})`);
+        return;
+      }
+
+      // Valid correspondence mapping:
+      // A(1, 1) right-angle corresponds to D(right-angle)
+      // B(4, 1) horizontal side corresponds to E
+      // C(1, 5) vertical side corresponds to F
+      const corrMap = { 'A': 'D', 'B': 'E', 'C': 'F' };
+
+      const c1 = corrMap[leftLetters[0]];
+      const c2 = corrMap[leftLetters[1]];
+      const c3 = corrMap[leftLetters[2]];
+
+      if (!c1 || !c2 || !c3) {
+        this.showSimFeedback('error', '⚠️ 원래 삼각형은 A, B, C이고, 확대된 삼각형은 D, E, F입니다. 알파벳을 확인해주세요.');
+        return;
+      }
+
+      const expectedRight = c1 + c2 + c3;
+
+      if (rightLetters === expectedRight) {
+        // Perfect correspondence!
+        this.showSimFeedback('success', `
+          🎉 <b>정답입니다! 참 잘했어요!</b><br>
+          대응하는 꼭짓점의 순서(<b>A↔D, B↔E, C↔F</b>)를 완벽히 맞추어 표현했습니다.<br>
+          <span style="display:inline-block; margin-top:0.25rem; font-weight:800; color:#059669; font-size:0.95rem;">
+            ✓ △${leftLetters} ∽ △${rightLetters}
+          </span>
+        `);
+      } else {
+        // Correspondence mismatch! Analyze what went wrong and provide exact guidance
+        let detailMsg = '';
+        if (leftLetters === 'ABC' && rightLetters === 'DFE') {
+          detailMsg = '점 B(밑변 3)의 대응점은 <b>E</b>이고, 점 C(높이 4)의 대응점은 <b>F</b>입니다. E와 F의 순서가 바뀌었습니다!';
+        } else if (leftLetters === 'ABC' && rightLetters === 'FED') {
+          detailMsg = '점 A(직각 꼭짓점)의 대응점은 <b>D</b>입니다. 첫 번째 꼭짓점부터 순서를 맞춰야 합니다.';
+        } else {
+          detailMsg = `각 꼭짓점의 대응점은 <b>${leftLetters[0]} ↔ ${c1}</b>, <b>${leftLetters[1]} ↔ ${c2}</b>, <b>${leftLetters[2]} ↔ ${c3}</b> 입니다.`;
+        }
+
+        this.showSimFeedback('error', `
+          ❌ <b>대응점의 순서가 맞지 않습니다!</b><br>
+          ${detailMsg}<br>
+          👉 올바른 표현: <b>△${leftLetters} ∽ △${expectedRight}</b> 로 고쳐 써보세요!
+        `);
+      }
+    };
+
+    btnCheck.addEventListener('click', checkInput);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkInput();
+    });
+  }
+
+  showSimFeedback(type, html) {
+    const feedback = document.getElementById('simSymbolFeedback');
+    if (!feedback) return;
+    feedback.className = `feedback-alert ${type}`;
+    feedback.innerHTML = html;
+    feedback.style.display = 'block';
   }
 }
 

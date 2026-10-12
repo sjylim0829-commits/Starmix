@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Starmix Similarity Lab | 영서중학교 2학년 7반 수학 연구수업</title>
-  <link rel="stylesheet" href="css/style.css?v=3.2">
+  <link rel="stylesheet" href="css/style.css?v=3.5">
 </head>
 <body>
 
@@ -50,9 +50,9 @@
       <div class="workspace-layout">
         
         <!-- Left: Smartphone Mockup Frame -->
-        <div class="viewport-card" style="background: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; min-height: 520px;">
+        <div class="viewport-card" style="background: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.75rem; min-height: 0; height: 100%;">
           
-          <div style="width: 310px; height: 500px; background: #0f172a; border-radius: 40px; padding: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #334155; display: flex; flex-direction: column; position: relative;">
+          <div style="width: 270px; height: min(450px, 95%); max-height: 460px; background: #0f172a; border-radius: 36px; padding: 10px; box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #334155; display: flex; flex-direction: column; position: relative;">
             
             <!-- Dynamic Island Notch -->
             <div style="width: 90px; height: 20px; background: #000000; border-radius: 12px; margin: 2px auto 6px auto; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
@@ -333,6 +333,35 @@
             </div>
           </div>
 
+          <!-- 닮음 기호 직접 표현 활동 (학생 입력 & 대응점 순서 검증) -->
+          <div class="card" id="cardSimilarityTyping">
+            <div class="card-title">
+              <span>✍️ 닮음 기호로 직접 나타내기</span>
+              <span class="grade-badge" style="background: #e0e7ff; color: #4338ca; border-color: #c7d2fe;">대응점 순서 필수!</span>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.45rem;">
+              △ABC와 △DEF가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 직접 적어보세요.
+            </div>
+
+            <div style="display: flex; gap: 0.3rem; margin-bottom: 0.4rem;">
+              <input type="text" id="inputSimSymbol" placeholder="예: △ABC ∽ △DEF" style="flex: 1; min-width: 0; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; text-align: center; color: var(--text-main);">
+              <button id="btnInsertSim" class="btn btn-secondary btn-sm" type="button" title="기호 ∽ 입력" style="font-size: 1.1rem; font-weight: 800; padding: 0.2rem 0.6rem;">∽</button>
+              <button id="btnCheckSim" class="btn btn-primary btn-sm" type="button" style="white-space: nowrap; padding: 0.35rem 0.7rem;">확인</button>
+            </div>
+
+            <!-- Quick helper buttons -->
+            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="△" type="button">△</button>
+              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="ABC" type="button">ABC</button>
+              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val=" ∽ " type="button">∽</button>
+              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="DEF" type="button">DEF</button>
+              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="DFE" type="button">DFE</button>
+              <button id="btnClearSimInput" class="btn btn-secondary btn-xs" type="button" style="margin-left: auto;">↺ 지우기</button>
+            </div>
+
+            <div id="simSymbolFeedback" class="feedback-alert" style="display: none; margin-top: 0.4rem; font-size: 0.78rem; padding: 0.5rem 0.7rem; line-height: 1.45;"></div>
+          </div>
+
         </aside>
       </div>
     </section>
@@ -502,10 +531,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=3.2"></script>
-  <script src="js/plane-lab.js?v=3.2"></script>
-  <script src="js/solid-lab.js?v=3.2"></script>
-  <script src="js/missions.js?v=3.2"></script>
-  <script src="js/app.js?v=3.2"></script>
+  <script src="js/intro-lab.js?v=3.5"></script>
+  <script src="js/plane-lab.js?v=3.5"></script>
+  <script src="js/solid-lab.js?v=3.5"></script>
+  <script src="js/missions.js?v=3.5"></script>
+  <script src="js/app.js?v=3.5"></script>
 </body>
 </html>

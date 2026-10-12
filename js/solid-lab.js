@@ -80,7 +80,7 @@ class SolidLab {
   setupThree() {
     const parent = this.canvas.parentElement;
     const width = parent.clientWidth || 800;
-    const height = Math.max(500, parent.clientHeight || 520);
+    const height = Math.max(260, parent.clientHeight || 420);
 
     // Scene
     this.scene = new THREE.Scene();
@@ -1146,24 +1146,39 @@ class SolidLab {
       ctx.strokeRect(originX, groundY - rect1H, rect1W, rect1H);
       ctx.setLineDash([]);
 
-      // 3. Diagonal Lines Comparison
-      // Base Diagonal (Green)
+      // 3. Right-Angle Marker at common origin
       ctx.strokeStyle = '#059669';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(originX, groundY);
-      ctx.lineTo(originX + rect1W, groundY - rect1H);
-      ctx.stroke();
+      ctx.lineWidth = 1.5;
+      const oRa = Math.min(10, rect1W * 0.25, rect1H * 0.25);
+      ctx.strokeRect(originX, groundY - oRa, oRa, oRa);
 
-      // Transformed Diagonal (Indigo or Red)
-      ctx.strokeStyle = transStroke;
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(originX, groundY);
-      ctx.lineTo(originX + rect2W, groundY - rect2H);
-      ctx.stroke();
+      // 4. Horizontal and Vertical Expansion Indicators (교과서 기준 변의 길이 비교)
+      ctx.font = 'bold 11px Pretendard, sans-serif';
 
-      // Top Alert Banner
+      // Horizontal dimension tags
+      ctx.fillStyle = '#065f46';
+      ctx.textAlign = 'center';
+      ctx.fillText(`기준 가로: ${baseW}`, originX + rect1W / 2, groundY + 16);
+
+      ctx.fillStyle = transStroke;
+      ctx.fillText(`확대 가로: ${transW.toFixed(1)} (×${rW.toFixed(1)})`, originX + rect2W / 2, groundY + 30);
+
+      // Vertical dimension tags
+      ctx.save();
+      ctx.translate(originX - 12, groundY - rect1H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#065f46';
+      ctx.fillText(`기준 세로: ${baseH}`, 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(originX - 26, groundY - rect2H / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = transStroke;
+      ctx.fillText(`확대 세로: ${transH.toFixed(1)} (×${rH.toFixed(1)})`, 0, 0);
+      ctx.restore();
+
+      // Top Alert Banner (대각선/기울기 언급 없이 교과서 맞춤 설명)
       ctx.fillStyle = isSimilar ? '#ecfdf5' : '#fef2f2';
       ctx.strokeStyle = isSimilar ? '#10b981' : '#ef4444';
       ctx.lineWidth = 1.2;
@@ -1177,18 +1192,18 @@ class SolidLab {
       ctx.fillStyle = isSimilar ? '#065f46' : '#991b1b';
       ctx.textAlign = 'center';
       if (isSimilar) {
-        ctx.fillText(`✓ 포개어보기 증명: 두 직사각형의 대각선이 일직선으로 완벽히 포개어집니다! (닮음비 1 : ${rW.toFixed(1)})`, width / 2, 25);
+        ctx.fillText(`✓ 포개어보기: 한 꼭짓점을 맞추어 겹쳤을 때, 가로와 세로가 모두 1 : ${rW.toFixed(1)}의 비율로 균일하게 늘어나 모양이 같습니다!`, width / 2, 25);
       } else {
-        ctx.fillText(`✗ 포개어보기 증명: 대각선의 기울기가 어긋나 모양이 일그러졌습니다! (비닮음)`, width / 2, 25);
+        ctx.fillText(`✗ 포개어보기: 가로 비율(1:${rW.toFixed(1)})과 세로 비율(1:${rH.toFixed(1)})이 서로 달라 모양이 일그러졌습니다! (비닮음)`, width / 2, 25);
       }
 
       // Legend
       ctx.font = '11px Pretendard, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillStyle = '#059669';
-      ctx.fillText(`■ 기준 (${baseW}×${baseH})`, originX + rect2W + 15, groundY - rect2H + 18);
+      ctx.fillText(`■ 기준 (초록 점선): ${baseW}×${baseH}`, originX + rect2W + 15, groundY - rect2H + 18);
       ctx.fillStyle = transStroke;
-      ctx.fillText(`■ 확대 (${transW.toFixed(1)}×${transH.toFixed(1)})`, originX + rect2W + 15, groundY - rect2H + 36);
+      ctx.fillText(`■ 확대: ${transW.toFixed(1)}×${transH.toFixed(1)}`, originX + rect2W + 15, groundY - rect2H + 36);
     }
 
     ctx.restore();
@@ -1233,7 +1248,7 @@ class SolidLab {
     if (!this.canvas || !this.camera || !this.renderer) return;
     const parent = this.canvas.parentElement;
     const width = parent.clientWidth || 800;
-    const height = Math.max(500, parent.clientHeight || 520);
+    const height = Math.max(260, parent.clientHeight || 420);
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
