@@ -143,9 +143,9 @@ class MissionsLab {
               Q2. 직사각형 A와 B의 닮음비를 가장 간단한 자연수의 비(m : n)로 나타내세요:
             </div>
             <div class="ratio-input-group">
-              <input type="number" id="inputRatioM" class="ratio-num-input" placeholder="m">
+              <input type="number" id="inputRatioM" class="ratio-num-input" placeholder="">
               <span style="font-size: 1.3rem; font-weight: 800; color: var(--text-muted);">:</span>
-              <input type="number" id="inputRatioN" class="ratio-num-input" placeholder="n">
+              <input type="number" id="inputRatioN" class="ratio-num-input" placeholder="">
             </div>
           </div>
 
@@ -204,8 +204,8 @@ class MissionsLab {
           </div>
           <div class="mission-desc" style="margin-bottom: 1rem;">
             오른쪽 두 사각뿔대 <b>(가)</b>와 <b>(나)</b>는 서로 닮은 도형이고, 
-            보라색으로 색칠된 <b style="color: #7c3aed;">□BFGC</b>와 <b style="color: #7c3aed;">□JNOK</b>가 서로 대응하는 면입니다.
-            아래 세 물음에 알맞은 답을 구해보세요.
+            <b>□BFGC</b>와 <b>□JNOK</b>가 서로 대응하는 면입니다.
+            다음을 구하시오.
           </div>
         </div>
 
@@ -224,8 +224,8 @@ class MissionsLab {
               <!-- Right side face CDHG (가) -->
               <polygon points="150,78 175,42 215,142 180,186" fill="#faf5ff" stroke="#334155" stroke-width="1.8" />
 
-              <!-- Shaded front face BFGC (가) -->
-              <polygon points="60,78 150,78 180,186 25,186" fill="rgba(192, 132, 252, 0.4)" stroke="#9333ea" stroke-width="2.2" />
+              <!-- Front face BFGC (가) -->
+              <polygon points="60,78 150,78 180,186 25,186" fill="rgba(192, 132, 252, 0.3)" stroke="#334155" stroke-width="2.0" />
 
               <!-- Top face ABCD (가) -->
               <polygon points="85,42 175,42 150,78 60,78" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
@@ -274,8 +274,8 @@ class MissionsLab {
               <!-- Right side face KLPO (나) -->
               <polygon points="394,79 413,52 443,127 416,160" fill="#faf5ff" stroke="#334155" stroke-width="1.8" />
 
-              <!-- Shaded front face JNOK (나) -->
-              <polygon points="326,79 394,79 416,160 300,160" fill="rgba(192, 132, 252, 0.4)" stroke="#9333ea" stroke-width="2.2" />
+              <!-- Front face JNOK (나) -->
+              <polygon points="326,79 394,79 416,160 300,160" fill="rgba(192, 132, 252, 0.3)" stroke="#334155" stroke-width="2.0" />
 
               <!-- Top face IJKL (나) -->
               <polygon points="345,52 413,52 394,79 326,79" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
@@ -317,8 +317,7 @@ class MissionsLab {
             </svg>
 
             <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem; text-align: center; line-height: 1.45;">
-              💡 <b>보라색 음영 면:</b> □BFGC ↔ □JNOK (서로 대응하는 면)<br>
-              대응하는 꼭짓점의 위치와 모서리의 길이를 관찰해보세요.
+              💡 두 사각뿔대 (가)와 (나)의 대응하는 꼭짓점의 위치와 모서리의 길이를 관찰해보세요.
             </div>
           </div>
 
@@ -334,9 +333,9 @@ class MissionsLab {
                 가장 간단한 자연수의 비($m : n$)로 입력하세요:
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <input type="number" id="inputM3RatioM" class="ratio-num-input" placeholder="m" style="width: 60px; padding: 0.45rem;">
+                <input type="number" id="inputM3RatioM" class="ratio-num-input" placeholder="" style="width: 60px; padding: 0.45rem;">
                 <b style="font-size: 1.1rem; color: var(--text-muted);">:</b>
-                <input type="number" id="inputM3RatioN" class="ratio-num-input" placeholder="n" style="width: 60px; padding: 0.45rem;">
+                <input type="number" id="inputM3RatioN" class="ratio-num-input" placeholder="" style="width: 60px; padding: 0.45rem;">
               </div>
             </div>
 
@@ -347,7 +346,7 @@ class MissionsLab {
                 <span>선분 DH (<span style="text-decoration: overline;">DH</span>)의 길이</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <input type="number" id="inputM3DH" class="ratio-num-input" placeholder="길이" style="width: 80px; padding: 0.45rem;">
+                <input type="number" id="inputM3DH" class="ratio-num-input" placeholder="" style="width: 80px; padding: 0.45rem;">
                 <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">cm</span>
               </div>
             </div>
@@ -359,17 +358,14 @@ class MissionsLab {
                 <span>면 ABCD에 대응하는 면</span>
               </div>
               <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-                <input type="text" id="inputM3Face" placeholder="예: 면 IJKL" style="flex: 1; min-width: 140px; padding: 0.45rem 0.6rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; color: var(--primary);">
+                <input type="text" id="inputM3Face" placeholder="" style="flex: 1; min-width: 140px; padding: 0.45rem 0.6rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; color: var(--primary);">
               </div>
-              <!-- Quick Helper Chips for Tablet / Mobile -->
-              <div style="display: flex; gap: 0.3rem; margin-top: 0.4rem; flex-wrap: wrap;">
-                <span style="font-size: 0.74rem; color: var(--text-muted); align-self: center;">빠른 입력:</span>
+              <!-- Helper Chips for Tablet / Mobile -->
+              <div style="display: flex; gap: 0.3rem; margin-top: 0.4rem; flex-wrap: wrap; align-items: center;">
+                <span style="font-size: 0.74rem; color: var(--text-muted); align-self: center;">기호 입력:</span>
                 <button type="button" class="m3-chip-btn" data-char="면 ">면</button>
                 <button type="button" class="m3-chip-btn" data-char="□">□</button>
-                <button type="button" class="m3-chip-btn" data-char="I">I</button>
-                <button type="button" class="m3-chip-btn" data-char="J">J</button>
-                <button type="button" class="m3-chip-btn" data-char="K">K</button>
-                <button type="button" class="m3-chip-btn" data-char="L">L</button>
+                <button type="button" id="btnClearM3Face" class="m3-chip-btn" style="margin-left: auto;">↺ 지우기</button>
               </div>
             </div>
 
@@ -750,6 +746,14 @@ class MissionsLab {
         }
       });
     });
+
+    const btnClearFace = document.getElementById('btnClearM3Face');
+    if (btnClearFace && inputFace) {
+      btnClearFace.addEventListener('click', () => {
+        inputFace.value = '';
+        inputFace.focus();
+      });
+    }
 
     // Enter Key Navigation
     if (inputM) {

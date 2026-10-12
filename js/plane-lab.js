@@ -91,7 +91,7 @@ const PLANE_SHAPES = {
     isAlwaysSimilar: false,
     reason: '네 변의 길이가 모두 같더라도 두 대각선의 길이의 비가 다르면 내각의 크기가 달라지므로 마름모는 항상 닮음인 것은 아닙니다.',
     hint: '가로 대각선과 세로 대각선의 길이를 각각 조작해보세요! 두 대각선의 비율이 달라지면 네 내각이 변하며 모양이 왜곡됩니다.',
-    simPrompt: '마름모 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
+    simPrompt: '마름모 ABCD와 EFGH가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 적어보세요.',
     expectedSim: '□ABCD ∽ □EFGH'
   },
   square: {
@@ -114,7 +114,7 @@ const PLANE_SHAPES = {
     isAlwaysSimilar: true,
     reason: '네 내각의 크기가 항상 90°로 모두 같고, 세 변의 길이의 비가 항상 일정하므로 어떤 두 정사각형도 항상 서로 닮은 도형입니다.',
     hint: '한 변의 길이를 조절해보세요! 모든 정사각형은 네 각이 90°이고 네 변의 길이가 같아 크기에 상관없이 항상 닮음입니다!',
-    simPrompt: '정사각형 ABCD와 EFGH가 닮음임을 기호로 적어보세요. (예: □ABCD ∽ □EFGH)',
+    simPrompt: '정사각형 ABCD와 EFGH가 닮음임을 <b>닮음 기호(∽)</b>를 사용하여 적어보세요.',
     expectedSim: '□ABCD ∽ □EFGH'
   },
   circle: {
@@ -1727,7 +1727,7 @@ class PlaneLab {
       const shape = PLANE_SHAPES[this.currentShape] || PLANE_SHAPES.right_triangle;
 
       if (!raw) {
-        this.showSimFeedback('error', '⚠️ 닮음 기호 표현을 입력해주세요! (예: ' + shape.expectedSim + ')');
+        this.showSimFeedback('error', '⚠️ 닮음 기호(∽)를 사용하여 두 도형의 기호 표현을 입력해주세요.');
         return;
       }
 
