@@ -272,30 +272,36 @@
             <div id="exploreControls">
               <div class="control-group">
                 <div class="control-label">
-                  <span>확대 배율 (k배)</span>
+                  <span>가로(밑변) 배율 조절</span>
+                  <span id="planeScaleXVal" class="control-value">2.0배</span>
+                </div>
+                <input type="range" id="planeScaleXSlider" min="0.5" max="3.0" step="0.5" value="2.0">
+              </div>
+
+              <div class="control-group">
+                <div class="control-label">
+                  <span>세로(높이) 배율 조절</span>
+                  <span id="planeScaleYVal" class="control-value">2.0배</span>
+                </div>
+                <input type="range" id="planeScaleYSlider" min="0.5" max="3.0" step="0.5" value="2.0">
+              </div>
+
+              <div class="control-group" style="margin-top: 0.2rem;">
+                <div class="control-label">
+                  <span>전체 정비율 확대 (k배)</span>
                   <span id="planeScaleVal" class="control-value">2.0배</span>
                 </div>
                 <input type="range" id="planeScaleSlider" min="0.5" max="3.0" step="0.5" value="2.0">
               </div>
 
-              <div class="control-group">
-                <div class="control-label"><span>변형 실험 (인지적 갈등 유발)</span></div>
-                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                  <button id="btnModeProportional" class="btn btn-primary btn-sm btn-block">
-                    ✓ 정비율 확대 (가로·세로 k배)
-                  </button>
-                  <button id="btnModeWidthOnly" class="btn btn-secondary btn-sm btn-block">
-                    ⚠ 왜곡 실험: 가로만 2배 늘이기
-                  </button>
-                  <button id="btnModeHeightOnly" class="btn btn-secondary btn-sm btn-block">
-                    ⚠ 왜곡 실험: 세로만 2배 늘이기
-                  </button>
-                </div>
+              <div style="display: flex; gap: 0.4rem; margin-top: 0.5rem;">
+                <button id="btnModeProportional" class="btn btn-primary btn-sm" style="flex: 1;">
+                  ✓ 정비율 맞추기
+                </button>
+                <button id="btnResetPlane" class="btn btn-secondary btn-sm" style="flex: 1;">
+                  ↺ 초기화
+                </button>
               </div>
-
-              <button id="btnResetPlane" class="btn btn-secondary btn-sm btn-block" style="margin-top: 0.5rem;">
-                ↺ 처음 상태로 초기화
-              </button>
             </div>
 
             <!-- 2) Student Interactive Drawing Controls -->
@@ -344,18 +350,15 @@
             </div>
 
             <div style="display: flex; gap: 0.3rem; margin-bottom: 0.4rem;">
-              <input type="text" id="inputSimSymbol" placeholder="예: △ABC ∽ △DEF" style="flex: 1; min-width: 0; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; text-align: center; color: var(--text-main);">
-              <button id="btnInsertSim" class="btn btn-secondary btn-sm" type="button" title="기호 ∽ 입력" style="font-size: 1.1rem; font-weight: 800; padding: 0.2rem 0.6rem;">∽</button>
+              <input type="text" id="inputSimSymbol" placeholder="" style="flex: 1; min-width: 0; padding: 0.4rem 0.5rem; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 700; text-align: center; color: var(--text-main);">
               <button id="btnCheckSim" class="btn btn-primary btn-sm" type="button" style="white-space: nowrap; padding: 0.35rem 0.7rem;">확인</button>
             </div>
 
-            <!-- Quick helper buttons -->
-            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
-              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="△" type="button">△</button>
-              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="ABC" type="button">ABC</button>
-              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val=" ∽ " type="button">∽</button>
-              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="DEF" type="button">DEF</button>
-              <button class="btn btn-secondary btn-xs chip-sim-helper" data-val="DFE" type="button">DFE</button>
+            <!-- Quick helper buttons: Only △ and ∽ -->
+            <div style="display: flex; gap: 0.35rem; align-items: center; margin-bottom: 0.4rem;">
+              <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 600;">기호 입력:</span>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val="△" type="button" style="font-weight: 700; padding: 0.25rem 0.65rem;">△</button>
+              <button class="btn btn-secondary btn-sm chip-sim-helper" data-val=" ∽ " type="button" style="font-weight: 800; font-size: 1rem; padding: 0.2rem 0.65rem;">∽</button>
               <button id="btnClearSimInput" class="btn btn-secondary btn-xs" type="button" style="margin-left: auto;">↺ 지우기</button>
             </div>
 
@@ -540,10 +543,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=3.8"></script>
-  <script src="js/plane-lab.js?v=3.8"></script>
-  <script src="js/solid-lab.js?v=3.8"></script>
-  <script src="js/missions.js?v=3.8"></script>
-  <script src="js/app.js?v=3.8"></script>
+  <script src="js/intro-lab.js?v=3.9"></script>
+  <script src="js/plane-lab.js?v=3.9"></script>
+  <script src="js/solid-lab.js?v=3.9"></script>
+  <script src="js/missions.js?v=3.9"></script>
+  <script src="js/app.js?v=3.9"></script>
 </body>
 </html>

@@ -124,63 +124,71 @@ class PlaneLab {
       });
     }
 
-    // Scale Sliders & Distortion Presets
-    const scaleSlider = document.getElementById('planeScaleSlider');
-    const scaleVal = document.getElementById('planeScaleVal');
+    // Scale Sliders
+    const scaleAllSlider = document.getElementById('planeScaleSlider');
+    const scaleAllVal = document.getElementById('planeScaleVal');
+    const scaleXSlider = document.getElementById('planeScaleXSlider');
+    const scaleXVal = document.getElementById('planeScaleXVal');
+    const scaleYSlider = document.getElementById('planeScaleYSlider');
+    const scaleYVal = document.getElementById('planeScaleYVal');
     const btnProp = document.getElementById('btnModeProportional');
-    const btnWidthOnly = document.getElementById('btnModeWidthOnly');
-    const btnHeightOnly = document.getElementById('btnModeHeightOnly');
     const btnResetPlane = document.getElementById('btnResetPlane');
 
-    if (scaleSlider && scaleVal) {
-      scaleSlider.addEventListener('input', (e) => {
+    const updateSliderUI = () => {
+      if (scaleXSlider) scaleXSlider.value = this.scaleX;
+      if (scaleXVal) scaleXVal.textContent = `${this.scaleX.toFixed(1)}배`;
+      if (scaleYSlider) scaleYSlider.value = this.scaleY;
+      if (scaleYVal) scaleYVal.textContent = `${this.scaleY.toFixed(1)}배`;
+
+      if (Math.abs(this.scaleX - this.scaleY) < 0.01) {
+        if (scaleAllSlider) scaleAllSlider.value = this.scaleX;
+        if (scaleAllVal) scaleAllVal.textContent = `${this.scaleX.toFixed(1)}배`;
+      } else {
+        if (scaleAllVal) scaleAllVal.textContent = '비율 왜곡';
+      }
+    };
+
+    if (scaleAllSlider) {
+      scaleAllSlider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
-        scaleVal.textContent = `${val.toFixed(1)}배`;
         this.scaleX = val;
         this.scaleY = val;
+        updateSliderUI();
+        this.render();
+      });
+    }
+
+    if (scaleXSlider) {
+      scaleXSlider.addEventListener('input', (e) => {
+        this.scaleX = parseFloat(e.target.value);
+        updateSliderUI();
+        this.render();
+      });
+    }
+
+    if (scaleYSlider) {
+      scaleYSlider.addEventListener('input', (e) => {
+        this.scaleY = parseFloat(e.target.value);
+        updateSliderUI();
         this.render();
       });
     }
 
     if (btnProp) {
       btnProp.addEventListener('click', () => {
-        const val = scaleSlider ? parseFloat(scaleSlider.value) : 2.0;
-        this.scaleX = val;
-        this.scaleY = val;
-        this.updateButtonsStyle([btnProp, btnWidthOnly, btnHeightOnly], btnProp);
-        this.render();
-      });
-    }
-
-    if (btnWidthOnly) {
-      btnWidthOnly.addEventListener('click', () => {
-        const val = scaleSlider ? parseFloat(scaleSlider.value) : 2.0;
-        this.scaleX = val;
-        this.scaleY = 1.0;
-        this.updateButtonsStyle([btnProp, btnWidthOnly, btnHeightOnly], btnWidthOnly);
-        this.render();
-      });
-    }
-
-    if (btnHeightOnly) {
-      btnHeightOnly.addEventListener('click', () => {
-        const val = scaleSlider ? parseFloat(scaleSlider.value) : 2.0;
-        this.scaleX = 1.0;
-        this.scaleY = val;
-        this.updateButtonsStyle([btnProp, btnWidthOnly, btnHeightOnly], btnHeightOnly);
+        this.scaleY = this.scaleX;
+        updateSliderUI();
         this.render();
       });
     }
 
     if (btnResetPlane) {
       btnResetPlane.addEventListener('click', () => {
-        if (scaleSlider) scaleSlider.value = 2.0;
-        if (scaleVal) scaleVal.textContent = '2.0배';
         this.scaleX = 2.0;
         this.scaleY = 2.0;
+        updateSliderUI();
         this.animateOverlay(0.0);
         if (toggleOverlay) toggleOverlay.checked = false;
-        if (btnProp) this.updateButtonsStyle([btnProp, btnWidthOnly, btnHeightOnly], btnProp);
         const simInput = document.getElementById('inputSimSymbol');
         const simFeedback = document.getElementById('simSymbolFeedback');
         if (simInput) simInput.value = '';
@@ -395,6 +403,7 @@ class PlaneLab {
   }
 
   drawGrid() {
+    this.ctx.save();
     const w = this.logicalWidth || this.canvas.clientWidth;
     const h = this.logicalHeight || this.canvas.clientHeight;
 
@@ -473,6 +482,7 @@ class PlaneLab {
 
     // Origin "0" label
     this.ctx.fillText('0', this.origin.x - 8, this.origin.y + 15);
+    this.ctx.restore();
   }
 
   renderPolygon(poly, color, fillColor, labelPrefix = '', angles = null) {
@@ -516,64 +526,196 @@ class PlaneLab {
       this.ctx.fill();
 
       if (this.showLabels) {
-        this.ctx.font = 'bold 14px sans-serif';
+        this.ctx.save();
+        this.ctx.font = 'bold 13px Pretendard, -apple-system, sans-serif';
         this.ctx.fillStyle = '#0f172a';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
         const label = labelPrefix ? `${labelPrefix}${idx + 1}` : pt.label;
-        this.ctx.fillText(label, screenPt.x + 8, screenPt.y - 8);
+        
+        // Place vertex letter label cleanly outside the polygon corner
+        let offX = 10;
+        let offY = -10;
+        if (poly.length === 3) {
+          if (idx === 0) { // Right-angle corner (A or D)
+            offX = -12;
+            offY = 12;
+          } else if (idx === 1) { // Bottom-right corner (B or E)
+            offX = 12;
+            offY = 12;
+          } else if (idx === 2) { // Top corner (C or F)
+            offX = -10;
+            offY = -12;
+          }
+        }
+        this.ctx.fillText(label, screenPt.x + offX, screenPt.y + offY);
+        this.ctx.restore();
       }
     });
   }
 
   drawSideLengths(poly, color) {
-    this.ctx.font = 'bold 12px sans-serif';
-    this.ctx.fillStyle = color;
+    this.ctx.save();
+    this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
 
     for (let i = 0; i < poly.length; i++) {
       const p1 = poly[i];
       const p2 = poly[(i + 1) % poly.length];
       const dist = this.getDist(p1, p2).toFixed(1);
 
-      const midX = (p1.x + p2.x) / 2;
-      const midY = (p1.y + p2.y) / 2;
-      const sMid = this.toScreen({ x: midX, y: midY });
+      const s1 = this.toScreen(p1);
+      const s2 = this.toScreen(p2);
+      const sMid = { x: (s1.x + s2.x) / 2, y: (s1.y + s2.y) / 2 };
 
-      // Badge for distance
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      this.ctx.fillRect(sMid.x - 14, sMid.y - 9, 28, 16);
+      // Badge dimensions & placement
+      const textMetrics = this.ctx.measureText(dist);
+      const badgeW = Math.max(30, textMetrics.width + 12);
+      const badgeH = 17;
+      const badgeX = sMid.x - badgeW / 2;
+      const badgeY = sMid.y - badgeH / 2;
+
+      // Draw clean white pill badge to cover underlying stroke
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
       this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = 1;
-      this.ctx.strokeRect(sMid.x - 14, sMid.y - 9, 28, 16);
+      this.ctx.lineWidth = 1.2;
 
+      if (this.ctx.roundRect) {
+        this.ctx.beginPath();
+        this.ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
+        this.ctx.fill();
+        this.ctx.stroke();
+      } else {
+        this.ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+        this.ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+      }
+
+      // Draw number precisely centered in the badge
       this.ctx.fillStyle = color;
-      this.ctx.fillText(dist, sMid.x - 10, sMid.y + 4);
+      this.ctx.fillText(dist, sMid.x, sMid.y);
     }
+    this.ctx.restore();
   }
 
   drawAngles(poly, color, presetAngles) {
-    // If it's a right triangle at vertex 0:
+    if (poly.length < 3) return;
+    this.ctx.save();
+    const N = poly.length;
+
     poly.forEach((pt, idx) => {
       const sPt = this.toScreen(pt);
-      let angleText = '';
+      const prev = poly[(idx - 1 + N) % N];
+      const next = poly[(idx + 1) % N];
+      const sPrev = this.toScreen(prev);
+      const sNext = this.toScreen(next);
 
+      // Vectors along adjacent edges in screen coordinates
+      const d1 = { x: sPrev.x - sPt.x, y: sPrev.y - sPt.y };
+      const d2 = { x: sNext.x - sPt.x, y: sNext.y - sPt.y };
+      const mag1 = Math.hypot(d1.x, d1.y);
+      const mag2 = Math.hypot(d2.x, d2.y);
+      if (mag1 < 1e-3 || mag2 < 1e-3) return;
+
+      const v1 = { x: d1.x / mag1, y: d1.y / mag1 };
+      const v2 = { x: d2.x / mag2, y: d2.y / mag2 };
+
+      // Interior angle
+      const dot = Math.max(-1, Math.min(1, v1.x * v2.x + v1.y * v2.y));
+      const rad = Math.acos(dot);
+      const deg = rad * 180 / Math.PI;
+
+      // Inward bisector vector
+      const bx = v1.x + v2.x;
+      const by = v1.y + v2.y;
+      const bMag = Math.hypot(bx, by);
+      const bisector = bMag > 1e-3 ? { x: bx / bMag, y: by / bMag } : { x: 0, y: -1 };
+
+      // Determine angle text
+      let angleText = '';
       if (presetAngles && presetAngles[idx]) {
         angleText = presetAngles[idx];
       } else {
-        // Compute angle from adjacent vertices
-        const prev = poly[(idx - 1 + poly.length) % poly.length];
-        const next = poly[(idx + 1) % poly.length];
-        const v1 = { x: prev.x - pt.x, y: prev.y - pt.y };
-        const v2 = { x: next.x - pt.x, y: next.y - pt.y };
-        const dot = v1.x * v2.x + v1.y * v2.y;
-        const mag1 = Math.hypot(v1.x, v1.y);
-        const mag2 = Math.hypot(v2.x, v2.y);
-        const deg = (Math.acos(Math.max(-1, Math.min(1, dot / (mag1 * mag2)))) * 180 / Math.PI).toFixed(0);
-        angleText = `${deg}°`;
+        angleText = `${Math.round(deg)}°`;
       }
 
-      this.ctx.font = '11px sans-serif';
-      this.ctx.fillStyle = '#475569';
-      this.ctx.fillText(angleText, sPt.x - 22, sPt.y + 18);
+      const isRightAngle = Math.abs(deg - 90) < 1.5;
+
+      if (isRightAngle) {
+        // Draw standard right-angle marker (square corner) inside the corner
+        const s = 14;
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 1.6;
+        this.ctx.beginPath();
+        this.ctx.moveTo(sPt.x + v1.x * s, sPt.y + v1.y * s);
+        this.ctx.lineTo(sPt.x + v1.x * s + v2.x * s, sPt.y + v1.y * s + v2.y * s);
+        this.ctx.lineTo(sPt.x + v2.x * s, sPt.y + v2.y * s);
+        this.ctx.stroke();
+
+        // Place "90°" text cleanly inside along bisector
+        const labelDist = 26;
+        const lx = sPt.x + bisector.x * labelDist;
+        const ly = sPt.y + bisector.y * labelDist;
+
+        this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        const tm = this.ctx.measureText(angleText);
+        const pw = tm.width + 6;
+        const ph = 15;
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        if (this.ctx.roundRect) {
+          this.ctx.beginPath();
+          this.ctx.roundRect(lx - pw / 2, ly - ph / 2, pw, ph, 3);
+          this.ctx.fill();
+        } else {
+          this.ctx.fillRect(lx - pw / 2, ly - ph / 2, pw, ph);
+        }
+
+        this.ctx.fillStyle = '#334155';
+        this.ctx.fillText(angleText, lx, ly);
+      } else {
+        // Draw interior angle arc
+        const arcR = 18;
+        const ang1 = Math.atan2(v1.y, v1.x);
+        const ang2 = Math.atan2(v2.y, v2.x);
+        const cross = v1.x * v2.y - v1.y * v2.x;
+        // If cross > 0, angle goes clockwise from ang1 to ang2 in screen space
+        const counterClockwise = cross < 0;
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 1.4;
+        this.ctx.beginPath();
+        this.ctx.arc(sPt.x, sPt.y, arcR, ang1, ang2, counterClockwise);
+        this.ctx.stroke();
+
+        // Place angle text along bisector inside the corner
+        const labelDist = 30;
+        const lx = sPt.x + bisector.x * labelDist;
+        const ly = sPt.y + bisector.y * labelDist;
+
+        this.ctx.font = 'bold 11px Pretendard, -apple-system, sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        const tm = this.ctx.measureText(angleText);
+        const pw = tm.width + 6;
+        const ph = 15;
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        if (this.ctx.roundRect) {
+          this.ctx.beginPath();
+          this.ctx.roundRect(lx - pw / 2, ly - ph / 2, pw, ph, 3);
+          this.ctx.fill();
+        } else {
+          this.ctx.fillRect(lx - pw / 2, ly - ph / 2, pw, ph);
+        }
+
+        this.ctx.fillStyle = '#334155';
+        this.ctx.fillText(angleText, lx, ly);
+      }
     });
+    this.ctx.restore();
   }
 
   animateOverlay(target) {
