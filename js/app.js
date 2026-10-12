@@ -50,10 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
         targetPanel.classList.add('active');
 
         // Refresh canvas geometry on tab change
-        if (targetId === 'tab-plane' && planeLab) {
+        if (targetId === 'tab-intro' && introLab) {
+          setTimeout(() => introLab.updateAvatar(), 50);
+        } else if (targetId === 'tab-plane' && planeLab) {
           setTimeout(() => planeLab.resizeCanvas(), 50);
         } else if (targetId === 'tab-solid' && solidLab) {
-          setTimeout(() => solidLab.onWindowResize(), 50);
+          setTimeout(() => {
+            solidLab.onWindowResize();
+            solidLab.selectFace(solidLab.selectedFace || 'front');
+          }, 50);
         } else if (targetId === 'tab-missions' && missionsLab) {
           setTimeout(() => missionsLab.initMission1Canvas(), 50);
         }
