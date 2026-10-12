@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Starmix Similarity Lab | 영서중학교 2학년 7반 수학 연구수업</title>
-  <link rel="stylesheet" href="css/style.css?v=4.5">
+  <link rel="stylesheet" href="css/style.css?v=4.6">
 </head>
 <body>
 
@@ -26,7 +26,7 @@
     </div>
   </header>
 
-  <!-- Tab Navigation (1차시 4단계 흐름: 도입 -> 평면 -> 입체 -> 미션) -->
+  <!-- Tab Navigation (1차시 5단계 흐름: 도입 -> 평면 -> 입체 -> 미션(평면) -> 실전문제(입체)) -->
   <nav class="tab-navigation">
     <button class="tab-btn active" data-tab="tab-intro">
       <span>📱</span> 0. 도입: 스마트폰 사진 실험
@@ -38,7 +38,10 @@
       <span>🧊</span> 2. 3D 입체도형 탐구 랩
     </button>
     <button class="tab-btn" data-tab="tab-missions">
-      <span>🎯</span> 3. 도전 미션 & 퀴즈
+      <span>🎯</span> 3. 도전 미션 (평면)
+    </button>
+    <button class="tab-btn" data-tab="tab-textbook-quiz">
+      <span>📝</span> 4. 교과서 실전 문제 (입체)
     </button>
   </nav>
 
@@ -623,9 +626,16 @@
       </div>
     </section>
 
-    <!-- TAB 3: Missions & Formative Assessment -->
+    <!-- TAB 3: Missions & Formative Assessment (Plane) -->
     <section id="tab-missions" class="tab-panel">
       <div id="missionsContainer">
+        <!-- Rendered by missions.js -->
+      </div>
+    </section>
+
+    <!-- TAB 4: Textbook Problem (Solid Frustum Similarity) -->
+    <section id="tab-textbook-quiz" class="tab-panel">
+      <div id="textbookQuizContainer" style="max-width: 1200px; margin: 0 auto; width: 100%;">
         <!-- Rendered by missions.js -->
       </div>
     </section>
@@ -654,7 +664,10 @@
           <b>2. 입체 랩(2단계):</b> 직육면체, 삼각뿔, 원기둥의 <b>대응면을 직접 클릭</b>하여 대응면이 닮음이어야 전체 입체가 닮음이 됨을 스스로 발견합니다.
         </p>
         <p style="margin-bottom: 0.75rem;">
-          <b>3. 미션(3단계):</b> 모눈에서 결손된 꼭짓점을 찾아 클릭하고, 직사각형 및 사각뿔대의 닮음비와 대응요소를 직접 계산하여 실력을 점검합니다.
+          <b>3. 미션(3단계 - 평면):</b> 모눈에서 결손된 꼭짓점을 찾아 클릭하고, 직사각형의 닮음비와 대응요소를 직접 계산하여 실력을 점검합니다.
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          <b>4. 교과서 실전 문제(4단계 - 입체):</b> 닮은 두 사각뿔대의 모서리 길이, 닮음비, 대응면을 구하는 교과서 대표 실전 문제를 풀며 입체도형의 닮음을 완성합니다.
         </p>
         <div style="background: var(--bg-subtle); padding: 0.75rem; border-radius: var(--radius-md); margin-top: 1rem; color: var(--text-main);">
           <b>💡 닮음의 기호:</b> $\triangle ABC \sim \triangle DEF$ (대응하는 점의 순서를 꼭 맞춰 적어야 합니다!)
@@ -666,10 +679,10 @@
   <!-- Scripts with cachebuster query string -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="js/intro-lab.js?v=4.5"></script>
-  <script src="js/plane-lab.js?v=4.5"></script>
-  <script src="js/solid-lab.js?v=4.5"></script>
-  <script src="js/missions.js?v=4.5"></script>
-  <script src="js/app.js?v=4.5"></script>
+  <script src="js/intro-lab.js?v=4.6"></script>
+  <script src="js/plane-lab.js?v=4.6"></script>
+  <script src="js/solid-lab.js?v=4.6"></script>
+  <script src="js/missions.js?v=4.6"></script>
+  <script src="js/app.js?v=4.6"></script>
 </body>
 </html>

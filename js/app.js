@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
-    missionsLab = new window.MissionsLab('missionsContainer');
+    missionsLab = new window.MissionsLab('missionsContainer', 'textbookQuizContainer');
   } catch (e) {
     console.error('MissionsLab init error:', e);
   }

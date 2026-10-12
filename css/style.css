@@ -131,6 +131,10 @@ body {
   display: flex;
   gap: 1.25rem;
   flex-shrink: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .tab-btn {
@@ -146,6 +150,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-shrink: 0;
 }
 
 .tab-btn:hover {
@@ -190,6 +195,13 @@ body {
   flex-direction: column;
   height: 100%;
   min-height: 0;
+}
+
+#tab-missions,
+#tab-textbook-quiz {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2.5rem;
 }
 
 @keyframes fadeIn {
